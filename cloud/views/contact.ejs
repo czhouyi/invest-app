@@ -44,10 +44,12 @@
     <table class="table table-borderless table-sortable">
       <thead>
       <tr>
-        <th data-sort="string">工程师</th>
-        <th data-sort="string">负责模块</th>
-        <th data-sort="string">邮箱</th>
-        <th>QQ</th>
+        <th data-sort="string">姓名</th>
+        <th data-sort="string">发起项目</th>
+        <th data-sort="string">参与项目</th>
+        <th data-sort="string">完成项目</th>
+        <th data-sort="string">邀请我参与项目</th>
+        <th></th>
       </tr>
       </thead>
       <tbody>
@@ -62,11 +64,11 @@
             <%= admin.name %></a>
           <% } %>
         </td>
-        <td><%= admin.typeName %></td>
-        <td><a href="mailto:<%= admin.email %>"><%= admin.email %></a></td>
-        <td>
-          <a href="http://wpa.qq.com/msgrd?v=3&uin=<%= admin.qq %>&site=qq&menu=yes"><span class="qq-image"></span></a>
-        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
       </tr>
       <% }); %>
       </tbody>
