@@ -1,0 +1,54 @@
+<div class="clearfix">
+  <div class="btn-group pull-left">
+    <a href="/tickets" class="btn btn-default">我的项目</a>
+    <a href="/history" class="btn btn-default active">参与项目</a>
+  </div>
+  <a class="btn btn-primary" href="/tickets/new" style="margin-left: 10px;">发起新项目</a>
+</div>
+
+<hr>
+
+<div>
+    <div>
+        <table class="table table-borderless table-sortable">
+            <thead>
+              <tr>
+                <th data-sort="int">#</th>
+                <th data-sort="string">项目名称</th>
+                <th data-sort="string">行业</th>
+                <th data-sort="string">项目状态</th>
+                <th data-sort="int" data-sort-default="desc" data-sort-onload>创建时间</th>
+              </tr>
+            </thead>
+            <tbody>
+            <% tickets.forEach (function (ticket){  %>
+            <tr>
+              <td class="table-id" data-sort-value="<%=ticket.ticket_id%>">#<%= ticket.ticket_id%></td>
+              <td class="table-title"><a href="/tickets/<%=ticket.id%>/threads" title="#<%= ticket.ticket_id %>"><%= ticket.title %></a></td>
+              <td class="table-type"><%= ticket.type %></td>
+              <td class="table-status"><%= ticket.status %></td>
+              <td class="table-date" data-sort-value="<%= ticket.createdAtUnix %>"><span class="bstooltip" title="<%= ticket.createdAtLong %>"><%= ticket.createdAt %></span></td>
+            </tr>
+            <%} ) %>
+            </tbody>
+        </table>
+    </div>
+  <div class="search-page">
+    <ul class="pagination">
+      <% if(back >= 0) { %>
+      <% if(type != null) { %>
+      <li><a href="/history?type=<%= type %>&skip=<%= back %>">上一页</a></li>
+      <% }else{ %>
+      <li><a href="/history?skip=<%= back %>">上一页</a></li>
+      <% } %>
+      <% } %>
+      <% if(next > 0) { %>
+      <% if(type != null) { %>
+      <li><a href="/history?type=<%= type %>&skip=<%= next %>">下一页</a></li>
+      <% }else{ %>
+      <li><a href="/history?skip=<%= next %>">下一页</a></li>
+      <% } %>
+      <% } %>
+    </ul>
+  </div>
+</div>
