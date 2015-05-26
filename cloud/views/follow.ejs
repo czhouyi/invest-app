@@ -41,13 +41,13 @@
 			</select>
 		</div>
 	</form>
-  <table class="table table-borderless table-sortable">
+  <table class="table table-bordered table-sortable">
     <thead>
     <tr>
+      <th data-sort="string">行业</th>
       <th data-sort="string">项目名称</th>
       <th data-sort="int">评分</th>
       <th data-sort="string">项目介绍</th>
-      <th data-sort="string">行业</th>
       <th data-sort="string">项目状态</th>
       <th data-sort="int" data-sort-default="desc" data-sort-onload>创建时间</th>
     </tr>
@@ -55,12 +55,12 @@
     <tbody>
     <% projects.forEach (function (project){ %>
     <tr>
-      <td class="table-title"><a href="/projects/<%= project.id %>/comments" title="#<%= project.name
-        %>"><%=
-            project.name %></a></td>
-      <td class="table-rating"><%= project.rating %></td>
-      <td class="table-introdution"><%= project.introdution %></td>
       <td class="table-type"><%= project.type %></td>
+      <td class="table-name"><a href="/projects/<%= project.id %>/comments" title="#<%= project.name%>"><%=project.name %></a></td>
+      <td class="table-rating text-danger" align="center" style="font-weight: bold;" >
+		<%= project.rating %>
+	  </td>
+      <td class="table-intro"><%= project.introdution %></td>
       <td class="table-status"><%= project.status %></td>
       <td class="table-date" data-sort-value="<%= project.createdAtUnix %>"><span class="bstooltip" title="<%= project.createdAtLong %>"><%= project.createdAt %></span></td>
     </tr>
