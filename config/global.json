@@ -1,8 +1,8 @@
 {
-    "applicationName" : "invest",
-    "applicationId": "z921kipl5921jj5zbune6e8grwvo033f1lz9mbb8euc3d4co",
-    "applicationKey": "w0odntxma6tyaz6fpwnsuaqhxfzwsna3bc4l4bqas0i3vyv9",
+    "applicationName" : "LCTest",
+    "applicationId": "cdr4kc5pc2ho1tmvzxvew2jszdjik9khrpn48xuvou221ouu",
+    "applicationKey": "k63tz60jcpjeb1bh5qg0moc1z5dzcvkbfyo1hp8mnmfrhoyr",
     "global": {
-        "avVersion": "0.2.0"
+        "avVersion": "0.3.1"
     }
 }

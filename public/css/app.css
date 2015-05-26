@@ -160,7 +160,7 @@ pre img {
 .ticket-contact-form {
 }
   .ticket-contact-form h3 {
-    margin: 0;
+    margin: 10px 10px 30px 10px;
     font-size: 18px;
   }
   .ticket-contact-form hr {
@@ -169,6 +169,9 @@ pre img {
   }
   .ticket-contact-form .form-group label {
     font-weight: bold;
+  }
+  .ticket-contact-form table td {
+	padding: 0px 5px 0px 5px;
   }
 
 .contact-save-btn {

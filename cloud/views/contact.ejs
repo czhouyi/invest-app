@@ -1,46 +1,6 @@
 
 <div class="row">
-  <div class="col-md-3">
-    <div class="well ticket-contact-form">
-      <form action="/clients/<%= client.id %>" method="post" class="" role="form">
-        <h3>我的联系方式</h3>
-        <hr>
-        <div class="form-group">
-          <label class="">用户名</label>
-          <div class="">
-            <p class=""><%= client.username %></p>
-          </div>
-        </div>
-        <%if(client.email){%>
-        <div class="form-group">
-          <label class="">邮箱</label>
-          <div class="">
-            <p class=""><%= client.email %></p>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="form-ticket-contact-qq" class="">QQ</label>
-          <input type="number" class="form-control qq-input" id="form-ticket-contact-qq" value="<%= client.qq %>" name="qq" placeholder="输入 QQ 号">
-        </div>
-        <div class="form-group">
-          <input class="btn btn-default contact-save-btn" type="submit" value="保存">
-        </div>
-        <%}%>
-      </form>
-    </div>
-
-    <% if(isAdmin){ %>
-    <div>
-      <p>添加管理员</p>
-      <form action="/admin" method="post">
-        <input type="text" class="input" id="admin-username-input" value="" name="username" placeholder="输入用户名添加或删除">
-        <input type="submit" class="btn btn-default" value="提交">
-      </form>
-    </div>
-    <% } %>
-  </div>
-  <!-- .col-md-3 -->
-  <div class="col-md-9">
+  <div class="col-md-12">
     <table class="table table-borderless table-sortable">
       <thead>
       <tr>
@@ -53,28 +13,19 @@
       </tr>
       </thead>
       <tbody>
-      <% admins.forEach(function (admin){ %>
+      <% users.forEach(function (user){ %>
       <tr>
         <td>
-          <% if(isAdmin){ %>
-          <a href="/admin/detail/<%= admin.id %>">
-            <%= admin.name %></a>
-          <% }else{ %>
-          <a href="/engineers/<%= admin.id %>">
-            <%= admin.name %></a>
-          <% } %>
+          <%= user.realName %>
         </td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td><%= user.ccnt %></td>
+        <td><%= user.gcnt %></td>
+        <td><%= user.pcnt %></td>
+        <td><%= user.mcnt %></td>
+        <td><a href="/contact/profile/<%= user.id %>" class="btn btn-primary btn-xs">个人主页</a></td>
       </tr>
       <% }); %>
       </tbody>
     </table>
-
   </div>
-  <!-- .col-md-9 -->
 </div>
-<!-- .row -->

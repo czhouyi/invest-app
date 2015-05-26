@@ -1,0 +1,50 @@
+
+<div class="row">
+  <div class="col-md-3">
+    <div class="well ticket-contact-form">
+		<div align="center">
+		<img src="<%= user.avatar %>" height="80" width="80" />
+        <h3><%= user.realName %></h3>
+		</div>
+		<table align="center">
+		<tr align="center">
+			<td><b><%= ccnt %></b></td>
+			<td><b><%= gcnt %></b></td>
+			<td><b><%= pcnt %></b></td>
+		</tr>
+		<tr align="center">
+			<td>发起项目</td>
+			<td>参与项目</td>
+			<td>完成投资</td>
+		</tr>
+		</table>
+        <hr>
+		<span>手机：<%= user.phone %></span>
+        <hr>
+		<span>就业：<%= user.work %></span>
+        <hr>
+		<span>就职公司：<%= user.company %></span>
+        <hr>
+		<span>毕业学校：<%= user.school %></span>
+        <hr>
+		<span>联系邮箱：<%= user.email %></span>
+    </div>
+  </div>
+
+  <div class="col-md-9">
+    <div class="well ticket-contact-form">
+        <span>邀请我参与<%= mcnt %>个项目</span>
+        <hr>
+		<% mrs.forEach(function (mr){ %>
+        <span><%= mr.name %></span>
+		<span><%= mr.rating %></span>
+		<span><%= mr.introdution %></span>
+		<span><%= mr.status %></span>
+		<a href="/contact/profile?uid=<%= mr.id %>" class="btn btn-primary ">项目详情</a>
+		<hr>
+		<% }); %>
+    </div>
+  </div>
+
+</div>
+<!-- .row -->

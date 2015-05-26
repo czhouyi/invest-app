@@ -8,7 +8,7 @@ var anonymousCid = 'anonymousCid';
 var mlog = require('cloud/mlog.js');
 var muser = require('cloud/muser.js');
 var mutil = require('cloud/mutil.js');
-var madmin = require('cloud/madmin.js');
+//var madmin = require('cloud/madmin.js');
 var config = require('cloud/config.js');
 
 function setResLoginStatus(res, isLogin, client) {
@@ -72,7 +72,8 @@ exports.clientTokenParser = function () {
         req.cid = cid;
         req.client = client;
         mlog.log('find cid=' + req.cid);
-        isAdmin(cid).then(function (isAdmin) {
+		next();
+        /*isAdmin(cid).then(function (isAdmin) {
           req.admin = isAdmin;
           if (req.cid != anonymousCid && client.emailVerified == false) {
             if (/^\/(requestEmailVerify|logout)/.test(req.url) || config.needEmailVerify === false) {
@@ -81,7 +82,7 @@ exports.clientTokenParser = function () {
               renderEmailVerify(res, client.email);
             }
           } else {
-            if (/^\/admin.*/.test(req.url)) {
+            if (/^\/admin./.test(req.url)) {
               if (isAdmin) {
                 next();
               } else {
@@ -92,7 +93,7 @@ exports.clientTokenParser = function () {
               next();
             }
           }
-        }, mutil.renderErrorFn(res));
+        }, mutil.renderErrorFn(res));*/
       });
     }
   };

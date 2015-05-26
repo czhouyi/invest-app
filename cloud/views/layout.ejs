@@ -4,71 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>投资之家后台管理</title>
+  <title>投资之家</title>
   <% include head %>
 
   <script>
     // http://stackoverflow.com/questions/2271156/chrome-desktop-notification-example
-    <% if(locals.token) { %>
-    $(document).ready(function () {
-
-      function notify(msg) {
-        if (!Notify.isSupported()) return;
-        requestNotificationPermission();
-        msg.link = msg.link + '<%= token%>';
-        console.dir(msg.link);
-        var myNotification = new Notify('AVOS Cloud 技术支持更新!', {
-          icon: 'https://cn.avoscloud.com/favicon.ico',
-          body: msg.message || '您的工单有新的回复，点击查看。',
-          timeout: 4,
-          notifyClick: function () {
-            console.dir(msg.link);
-            window.open(msg.link);
-          }
-        });
-        myNotification.show();
-      }
-
-      function requestNotificationPermission() {
-        if (!Notify.isSupported())
-          alert('抱歉，您的浏览器不支持桌面通知，请使用 Chrome, Safari 等现代浏览器');
-        if (Notify.needsPermission()) {
-          $('#enableNotify').hide();
-          return Notify.requestPermission();
-        }
-      }
-
-      $('#enableNotifyBtn').click(requestNotificationPermission);
-
-      window.setInterval(function () {
-        //console.log('run');
-        if (!Notify.isSupported() || Notify.needsPermission()) return;
-        //console.log(Notify.needsPermission() + ' runrun');
-        var lastDate = $.jStorage.get('lastDate');
-        $.getJSON('/notifications?token=<%=token%>', {lastDate: lastDate}, function (data) {
-          if (data.results) {
-            if (data.results.length > 0) {
-              $.jStorage.set('lastDate', data.results[0].createdAt.getTime());
-            }
-            if ($.jStorage.get('lastDate') == null && data.results.length == 0) {
-              $.jStorage.set('lastDate', new Date().getTime());
-            }
-            $.each(data.results, function (index, msg) {
-              notify(msg);
-            });
-          }
-        });
-      }, 5000);
-
-      if (Notify.isSupported() && Notify.needsPermission()) {
-        $('#enableNotify').show();
-      }
-
-//end of jquery ready.
-    });
-
-    <% } %>
-
 
     function existsAppIdOrKey(content) {
       var re = /.*[0-9a-z]{48}.*/;
@@ -81,7 +21,7 @@
 
     function back(){
       if(document.referrer=='' ||document.referrer==window.location){
-        window.location='/tickets'
+        window.location='/projects'
       }else{
         history.back()
       }
@@ -99,19 +39,19 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand font-logo" href="/admin">投资之家<span class="navbar-brand-subtitle">后台管理</span></a>
+      <a class="navbar-brand font-logo" href="/admin">投资之家</a>
     </div>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li id="site_nav_tickets"><a href="/tickets">我发起的项目</a></li>
-        <li id="site_nav_history"><a href="/history">我参与的项目</a></li>
+        <li id="site_nav_projects"><a href="/projects">我发起的项目</a></li>
+        <li id="site_nav_follow"><a href="/follow">我参与的项目</a></li>
         <li id="site_nav_contact"><a href="/contact">通讯录</a></li>
         <li id="site_nav_users"><a href="#">所有用户</a></li>
       </ul>
 
       <ul class="nav navbar-nav pull-right">
         <li id="site_nav_welcome">
-          <a href="/tickets" >欢迎您，<%=mClient.username%></a>
+		<a href="/contact/profile/<%= mClient.id %>" >欢迎您，<%=mClient.username%></a>
         </li>
         <li id="site_nav_logout">
           <%if(isLogin){%>
@@ -165,8 +105,8 @@
     });
 
     var site_nav_url = window.location.pathname;
-    var regs = [/^(\/history|\/admin\/history).*/, /^(\/tickets|\/admin\/tickets).*/, /^\/contact.*/];
-    var selectors = ["#site_nav_history", "#site_nav_tickets", "#site_nav_contact"];
+    var regs = [/^(\/follow|\/admin\/follow).*/, /^(\/projects|\/admin\/projects).*/, /^\/contact.*/];
+    var selectors = ["#site_nav_follow", "#site_nav_projects", "#site_nav_contact"];
     for (var i = 0; i < regs.length; i++) {
       if (regs[i].exec(site_nav_url)) {
         $(selectors[i]).addClass('active');
