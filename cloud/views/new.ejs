@@ -2,39 +2,17 @@
 <script type="text/javascript">
   $(function () {
 
-    function checkContentOk(content){
-      var secret=$("#inputOpen").is(":checked");
-      if(secret==false && existsAppIdOrKey(content)){
-        alert('检测到含有 AppId 或 AppKey，请勾选「仅管理员可见」');
-        return false;
-      }else{
-        return true;
-      }
-    }
-
-    $("#ticketForm").submit(function (event) {
-      var $form = $(this),
-        title = $form.find("input[id='inputTitle']").val(),
-        content = $form.find("textarea[id='inputContent']").val();
-      if (title == '' || content == '') {
-        alert("标题和问题描述都不能为空");
-        return false;
-      }
-      return checkContentOk(content);
-    });
-
-    $('#inputContent').keydown(function (e) {
+    $('#inputIntrodution').keydown(function (e) {
 
       if (e.ctrlKey && e.keyCode == 13) {
         // Ctrl-Enter pressed
-        $("#ticketForm").submit();
+        $("#projectForm").submit();
       }
     });
 
 
   });
 </script>
-<% if(client.id!='anonymousCid'){%>
 
 <div class="callout callout-info callout-has-icon" role="alert">
   <i class="avc-icon avc-info"></i>
@@ -44,7 +22,6 @@
   </ul>
 </div>
 
-<% }%>
 <form id="projectForm" enctype="multipart/form-data" action="/projects?token=<%=token%>" method="post">
   <div class="form-group">
     <label class="control-label" for="inputName">
@@ -96,10 +73,9 @@
   <div class="form-group">
     <label class="control-label" for="inputInvestMoney">
       投资额
-      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
     </label>
     <div class="controls">
-      <input type="number" name="invest_money" id="inputInvestMoney" class="form-control" placeholder="投资额" required>
+      <input type="number" name="invest_money" id="inputInvestMoney" class="form-control" placeholder="投资额" >
     </div>
   </div>
   <div class="form-group">
@@ -107,7 +83,7 @@
       联系方式
     </label>
     <div class="controls">
-      <input type="text" name="contact_way" id="inputContact" class="form-control" placeholder="联系方式" required>
+      <input type="text" name="contact_way" id="inputContact" class="form-control" placeholder="联系方式" >
     </div>
   </div>
 

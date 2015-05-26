@@ -1,11 +1,13 @@
 /* Limit title col width for tables, this avoid super-long non-breaking characters */
-.table-title {
-  width: 60%;
+.table-intro {
+  width: 50%;
 }
 
 /* Limit date col width for tables */
 .table-status,
 .table-type,
+.table-name,
+.table-rating,
 .table-date {
   width: 10%;
 }

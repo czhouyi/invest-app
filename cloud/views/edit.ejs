@@ -79,25 +79,34 @@
 
 <div>
   <div class="clearfix">
-
     <div class="pull-left" style="width: 75%">
       <h2 style="display: inline"><%= project.name %>
       </h2>
     </div>
-
     <div class="pull-right" style="">
-
     </div>
   </div>
 
   <div>
     <p>
-      <span class="project-id">#<%= project.id %>-</span>
-      <span class="project-type"><%= project.type %>-</span>
-      <span class="project-date bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAt %></span>
-      - <%= project.status %>
+	  <span style="display:inline"><%= project.creator %> 发起的项目</span>
+      <span class="bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAt %></span>
+    <p>
+      <span>项目类型：<%= project.type %></span>
     </p>
-    <pre><%= project.introdution %><%- project.attachments %></pre>
+    <p>
+      <span>项目状态：<%= project.status %></span>
+    </p>
+    <p>
+      <span>融资额：<%= project.invest_money %>元人民币</span>
+    </p>
+	项目描述：
+    <pre><%= project.introdution %></pre>
+	附件：
+	<% attachs.forEach (function(attach){ %>
+	<a href="<%= attach.get('file').url() %>"><%= attach.get('name') %></a>
+	<% }); %>
+	<hr>
   </div>
 </div>
 

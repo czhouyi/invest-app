@@ -103,7 +103,8 @@ function transformProject(t) {
 		name: t.get('name'),
 		introdution: t.get('introdution'),
 		type: type,
-		cid: t.get('creator'),
+		creatorId: t.get('creator').id,
+		creator: t.get('creator').get('realName'),
 		status: status,
 		rawStatus: rawStatus,
 		rating: t.get('rating'),
@@ -309,20 +310,29 @@ app.get('/projects/:id/comments', function (req, res) {
 	query.include("fromuser");
 	query.include("touser");
     query.find().then(function (comments) {
-        var project = AV.Object.createWithoutData('Project', projectId);
-        project.fetch().then(function (project) {
-            if (isProjectEmpty(project) == false) {
+		var pq = new AV.Query('Project');
+		pq.equalTo('objectId', projectId);
+		pq.include('creator');
+        pq.find().then(function (projects) {
+			if (projects) {
+				var project = projects[0];
+				var relation = project.relation("attachments");
                 project = transformProject(project);
                 comments = _.map(comments, transformComment);
                 //ticket.visible = judgeVisibleForOne(open, isAdmin, cid, ticket.cid);
                 //judgeVisible(threads, isAdmin, cid, ticket.cid);
                 //var lastOpen = findMyLastOpen(isAdmin, ticket, threads);
-                res.render('edit', { 
-                    project: project, 
-                    token: token, 
-                    comments: comments,
-                    cid: cid 
-                });
+				relation.query().find({
+					success: function(attachs){
+						res.render('edit', { 
+							project: project, 
+							token: token, 
+							comments: comments,
+							cid: cid,
+							attachs: attachs
+						});
+					}
+				});
             } else {
                 renderError(res, '找不到项目，该项目可能已经被删除');
             }
