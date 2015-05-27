@@ -17,6 +17,14 @@
   color: #999;
 }
 
+.text-center {
+  text-align: center;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
 /* Sortable tables powered by Stupid Table */
 .table-sortable thead th[data-sort] {
   cursor: pointer;
@@ -175,6 +183,10 @@ pre img {
   .ticket-contact-form table td {
 	padding: 0px 5px 0px 5px;
   }
+
+.contact-table table td {
+	padding: 0px 5px 0px 5px;
+}
 
 .contact-save-btn {
 /*  margin-left: 10px;*/

@@ -98,6 +98,15 @@ function transformProject(t) {
 	if (status === undefined) {
 		status = '未知';
 	}
+
+	var rating_int = parseInt(t.get('rating'));
+	var star = "";
+	for (var i = 0; i < rating_int; i++) {
+		star += '<span class="glyphicon glyphicon-star"></span>';
+	}
+	for (var i = 0; i < 5-rating_int; i++) {
+		star += '<span class="glyphicon glyphicon-star-empty"></span>';
+	}
 	return {
 		id: t.id,
 		name: t.get('name'),
@@ -108,6 +117,7 @@ function transformProject(t) {
 		status: status,
 		rawStatus: rawStatus,
 		rating: t.get('rating'),
+		star: star,
 		invest_money: t.get('invest_money'),
 		contact_way: t.get('contact_way'),
 		createdAt: formatTime(t.createdAt),

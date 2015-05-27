@@ -57,9 +57,7 @@
     <tr>
       <td class="table-type"><%= project.type %></td>
       <td class="table-name"><a href="/projects/<%= project.id %>/comments" title="#<%= project.name%>"><%=project.name %></a></td>
-      <td class="table-rating text-danger" align="center" style="font-weight: bold;">
-		<span><%= project.rating %></span>
-	  </td>
+      <td class="table-rating"><%- project.star %></td>
       <td class="table-intro"><%= project.introdution %></td>
       <td class="table-status"><%= project.status %></td>
       <td class="table-date" data-sort-value="<%= project.createdAtUnix %>"><span class="bstooltip" title="<%= project.createdAtLong %>"><%= project.createdAt %></span></td>

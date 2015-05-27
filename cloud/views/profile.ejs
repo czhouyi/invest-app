@@ -1,49 +1,60 @@
 
 <div class="row">
   <div class="col-md-3">
-    <div class="well ticket-contact-form">
-		<div align="center">
-		<img src="<%= user.avatar %>" height="80" width="80" />
-        <h3><%= user.realName %></h3>
-		</div>
-		<table align="center">
-		<tr align="center">
-			<td><b><%= ccnt %></b></td>
-			<td><b><%= gcnt %></b></td>
-			<td><b><%= pcnt %></b></td>
-		</tr>
-		<tr align="center">
-			<td>发起项目</td>
-			<td>参与项目</td>
-			<td>完成投资</td>
-		</tr>
-		</table>
-        <hr>
-		<span>手机：<%= user.phone %></span>
-        <hr>
-		<span>就业：<%= user.work %></span>
-        <hr>
-		<span>就职公司：<%= user.company %></span>
-        <hr>
-		<span>毕业学校：<%= user.school %></span>
-        <hr>
-		<span>联系邮箱：<%= user.email %></span>
-    </div>
+	<ul class="list-group">
+		<li class="list-group-item">
+			<div class="contact-table" align="center">
+				<img src="<%= user.avatar %>" height="80" width="80" onerror="javascript:this.src='/images/avatar.png'" />
+				<h3><%= user.realName %></h3>
+				<table class="text-center">
+					<tr class="text-center text-bold">
+						<td><%= ccnt %></td>
+						<td><%= gcnt %></td>
+						<td><%= pcnt %></td>
+					</tr>
+					<tr class="text-center">
+						<td>发起项目</td>
+						<td>参与项目</td>
+						<td>完成投资</td>
+					</tr>
+				</table>
+			</div>
+		</li>
+		<li class="list-group-item">
+			<span>用户名</span><span style="float:right;"><%= user.username %></span>
+		</li>
+		<li class="list-group-item">
+			<span>手机</span><span style="float:right;"><%= user.phone %></span>
+		</li>
+		<li class="list-group-item">
+			<span>就业</span><span style="float:right;"><%= user.work %></span>
+		</li>
+		<li class="list-group-item">
+			<span>就职公司</span><span style="float:right;"><%= user.company %></span>
+		</li>
+		<li class="list-group-item">
+			<span>毕业学校</span><span style="float:right;"><%= user.school %></span>
+		</li>
+		<li class="list-group-item">
+			<span>联系邮箱</span><span style="float:right;"><%= user.email %></span>
+		</li>
+	</ul>
   </div>
 
   <div class="col-md-9">
-    <div class="well ticket-contact-form">
-        <span>邀请我参与<%= mcnt %>个项目</span>
-        <hr>
+	<ul class="list-group">
+		<li class="list-group-item">
+			<span>邀请我参与 <b><%= mcnt %></b> 个项目</span>
+		</li>
 		<% mrs.forEach(function (mr){ %>
-        <span><%= mr.name %></span>
-		<span><%= mr.rating %></span>
-		<span><%= mr.introdution %></span>
-		<span><%= mr.status %></span>
-		<a href="/contact/profile?uid=<%= mr.id %>" class="btn btn-primary ">项目详情</a>
-		<hr>
+		<li class="list-group-item">
+			<span><%- mr.star %></span><br>
+			<h3><a href="/projects/<%= mr.id %>/comments"><%= mr.name %></a><br><small><%= mr.introdution %></small></h3>
+			<span>项目状态：<%= mr.status %></span>
+			<span class="bstooltip" title="<%= mr.createdAtLong %>" style="float:right;">@ <%= mr.createdAt %></span>
+		</li>
 		<% }); %>
-    </div>
+	</ul>
   </div>
 
 </div>
