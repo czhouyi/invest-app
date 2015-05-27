@@ -118,8 +118,8 @@ function transformProject(t) {
 		rawStatus: rawStatus,
 		rating: t.get('rating'),
 		star: star,
-		invest_money: t.get('invest_money'),
-		contact_way: t.get('contact_way'),
+		invest_money: t.get('invest_money') ? t.get('invest_money') : '',
+		contact_way: t.get('contact_way') ? t.get('contact_way') : '',
 		createdAt: formatTime(t.createdAt),
 		createdAtLong: formatTimeLong(t.createdAt),
 		createdAtUnix: moment(t.createdAt).valueOf()

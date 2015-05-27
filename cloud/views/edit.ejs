@@ -77,36 +77,51 @@
   });
 </script>
 
-<div>
-  <div class="clearfix">
-    <div class="pull-left" style="width: 75%">
-      <h2 style="display: inline"><%= project.name %>
-      </h2>
-    </div>
-    <div class="pull-right" style="">
-    </div>
-  </div>
-
-  <div>
-    <p>
-	  <span style="display:inline"><%= project.creator %> 发起的项目</span>
-      <span class="bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAt %></span>
-    <p>
-      <span>项目类型：<%= project.type %></span>
-    </p>
-    <p>
-      <span>项目状态：<%= project.status %></span>
-    </p>
-    <p>
-      <span>融资额：<%= project.invest_money %>元人民币</span>
-    </p>
-	项目描述：
-    <pre><%= project.introdution %></pre>
-	附件：
-	<% attachs.forEach (function(attach){ %>
-	<a href="<%= attach.get('file').url() %>"><%= attach.get('name') %></a>
-	<% }); %>
-	<hr>
+<div class="row">
+  <div class="col-md-12">
+	<ul class="list-group">
+		<li class="list-group-item">
+			<span style="display:inline"><%= project.creator %> 发起的项目</span>
+			<span class="bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAt %></span>
+		</li>
+		<li class="list-group-item">
+			<h2 style="display: inline"><%= project.name %><br><small><%= project.introdution %></small></h2>
+		</li>
+		<li class="list-group-item">
+			<span>行业</span><span class="right"><%= project.type %></span>
+		</li>
+		<li class="list-group-item">
+			<span>融资额</span><span class="right"><% if (project.invest_money){ %><%= project.invest_money %>元人民币<% } %></span>
+		</li>
+		<% attachs.forEach (function(attach, index){ %>
+		<li class="list-group-item">
+			<span>附件<%= index+1 %></span>
+			<a href="<%= attach.get('file').url() %>" class="btn btn-primary btn-xs right">删除</a>
+			<span></span>
+			<a href="<%= attach.get('file').url() %>" class="btn btn-link btn-xs right"><%= attach.get('name') %></a>
+		</li>
+		<% }); %>
+		<li class="list-group-item">
+		</li>
+		<li class="list-group-item">
+			<span>接收日期</span><span class="right"><%= project.createdAtLong %></span>
+		</li>
+		<li class="list-group-item">
+			<span>质量判断</span><span class="right"><%- project.star %></span>
+		</li>
+		<li class="list-group-item">
+			<span>项目阶段</span><span class="right"><%= project.status %></span>
+		</li>
+		<li class="list-group-item">
+			<span>项目来源</span><span class="right"><%= project.creator %></span>
+		</li>
+		<li class="list-group-item">
+			<span>投资回报</span><span class="right"></span>
+		</li>
+		<li class="list-group-item">
+			<span>联系方式</span><span class="right"><%= project.contact_way %></span>
+		</li>
+	</ul>
   </div>
 </div>
 

@@ -49,7 +49,10 @@
 		<% mrs.forEach(function (mr){ %>
 		<li class="list-group-item">
 			<span><%- mr.star %></span><br>
-			<h3><a href="/projects/<%= mr.id %>/comments"><%= mr.name %></a><br><small><%= mr.introdution %></small></h3>
+			<h3>
+			<a href="/projects/<%= mr.id %>/comments"><%= mr.name %></a><br>
+			<small><%= mr.introdution %></small>
+			</h3>
 			<span>项目状态：<%= mr.status %></span>
 			<span class="bstooltip" title="<%= mr.createdAtLong %>" style="float:right;">@ <%= mr.createdAt %></span>
 		</li>
