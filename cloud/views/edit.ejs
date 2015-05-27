@@ -1,164 +1,123 @@
+
 <script type="text/javascript">
-  var ctrlx=false;
-  var enterKey=13,xKey=88,sKey=83,escKey=27,semiKey=186,wKey=87;
-  var esc;
   $(function () {
 
-    function checkContentOk(content) {
-      var secret = $("#inputOpen").is(":checked");
-      if (secret == false && existsAppIdOrKey(content)) {
-        alert('检测到含有 AppId 或 AppKey，请勾选「仅管理员可见」');
-        return false;
-      } else {
-        return true;
-      }
-    }
+    $('#inputIntrodution').keydown(function (e) {
 
-    $("#threadForm").submit(function (event) {
-      var $form = $(this),
-        content = $form.find("textarea[id='inputContent']").val();
-      if (content == '' && $("#inputClose").val() != '1') {
-        alert("回复不能为空");
-        return false;
-      }
-      return checkContentOk(content);
-    });
-
-    $("#deleteForm").submit(function (event) {
-      return confirm('确认删除吗？');
-    });
-
-    function ctrlOrMeta(e){
-      return e.ctrlKey || e.metaKey;
-    }
-
-    $('#inputContent').keydown(function (e) {
-      if (ctrlOrMeta(e) && e.keyCode == enterKey) {
+      if (e.ctrlKey && e.keyCode == 13) {
         // Ctrl-Enter pressed
-        $("#threadForm").submit();
-        return false;
-      }else if(ctrlx && ctrlOrMeta(e) && e.keyCode==sKey){
-        $("#threadForm").submit();
-        return false;
-      }else if(ctrlOrMeta(e) && e.keyCode==xKey){
-        ctrlx=true;
+        $("#projectForm").submit();
       }
-      /*if(e.keyCode==escKey){
-        console.log('esc key');
-        esc=true;
-      }
-      if(esc && e.keyCode==wKey){
-        console.log('semi key');
-        $("#threadForm").submit();
-        return false;
-      }*/
-    }).keyup(function(e){
-      if(e.keyCode!=xKey){
-        ctrlx=false;
-      }
-      /*if(e.keyCode!=escKey){
-        esc=false;
-      }
-      if(e.keyCode==wKey){
-        console.log('return false');
-        return false;
-      }*/
     });
 
-    $("#closeBtn").click(function (event) {
-
-      function close() {
-        $("#inputClose").val("1");
-        $("#threadForm").submit();
-      }
-
-    });
 
   });
 </script>
 
-<div class="row">
-  <div class="col-md-12">
+<div class="callout callout-info callout-has-icon" role="alert">
+  <i class="avc-icon avc-info"></i>
+  <h4>小贴士</h4>
+  <ul>
+    <li>上传附件仅支持<span class="alert-warning">Word, Pdf, Power Point</span>格式的文件</li>
+  </ul>
+</div>
+
+<form id="projectForm" enctype="multipart/form-data" action="/projects/<%= project.id %>/?token=<%=token%>" method="post">
+  <div class="form-group">
+    <label class="control-label" for="inputName">
+      项目名称
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <input type="text" name="name" id="inputName" value="<%= project.name %>" class="form-control" placeholder="项目名称" required>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputType">
+      行业
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+    <select id="inputType" class="form-control" name="type" required>
+      <option value="SOCIAL" <% if(project.rawType=='SOCIAL'){ %>selected="selected"<% } %>>社交</option>
+      <option value="O2O" <% if(project.rawType=='O2O'){ %>selected="selected"<% } %>>O2O</option>
+      <option value="EBUSINESS" <% if(project.rawType=='EBUSINESS'){ %>selected="selected"<% } %>>电商</option>
+      <option value="GAME" <% if(project.rawType=='GAME'){ %>selected="selected"<% } %>>游戏</option>
+      <option value="EXTRA" <% if(project.rawType=='EXTRA'){ %>selected="selected"<% } %>>其他</option>
+    </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputStatus">
+      状态
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+    <select id="inputStatus" class="form-control" name="status" required>
+      <option value="FINANCING" <% if(project.rawStatus=='FINANCING'){ %>selected="selected"<% } %>>融资中</option>
+      <option value="FOLLOWING" <% if(project.rawStatus=='FOLLOWING'){ %>selected="selected"<% } %>>跟踪</option>
+      <option value="COMPLETE" <% if(project.rawStatus=='COMPLETE'){ %>selected="selected"<% } %>>已完成</option>
+      <option value="ABUNDANT" <% if(project.rawStatus=='ABUNDANT'){ %>selected="selected"<% } %>>已终止</option>
+    </select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputRating">
+	  评分
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <input type="number" name="rating" id="inputRating" max="5" min="0" value="<%= project.rating %>" class="form-control" placeholder="项目评分" required>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputInvestMoney">
+      投资额
+    </label>
+    <div class="controls">
+      <input type="number" name="invest_money" id="inputInvestMoney" value="<%= project.invest_money %>" class="form-control" placeholder="投资额" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputContact">
+      联系方式
+    </label>
+    <div class="controls">
+      <input type="text" name="contact_way" id="inputContact" value="<%= project.contact_way %>" class="form-control" placeholder="联系方式" >
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label" for="inputIntrodution">
+      项目描述
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <textarea rows="10" cols="20" name="introdution" id="inputIntrodution" class="form-control" placeholder="项目描述" required><%= project.introdution %></textarea>
+    </div>
+  </div>
 	<ul class="list-group">
-		<li class="list-group-item">
-			<span style="display:inline"><%= project.creator %> 发起的项目</span>
-			<span class="bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAt %></span>
-		</li>
-		<li class="list-group-item">
-			<h2 style="display: inline"><%= project.name %><br><small><%= project.introdution %></small></h2>
-		</li>
-		<li class="list-group-item">
-			<span>行业</span><span class="right"><%= project.type %></span>
-		</li>
-		<li class="list-group-item">
-			<span>融资额</span><span class="right"><% if (project.invest_money){ %><%= project.invest_money %>元人民币<% } %></span>
-		</li>
 		<% attachs.forEach (function(attach, index){ %>
 		<li class="list-group-item">
 			<span>附件<%= index+1 %></span>
-			<a href="<%= attach.get('file').url() %>" class="btn btn-primary btn-xs right">删除</a>
+			<button class="btn btn-primary btn-xs right" 
+			onclick="$.post('/attach/delete', {aid:'<%= attach.id %>', pid:'<%= project.id %>'});">删除</button>
 			<span></span>
 			<a href="<%= attach.get('file').url() %>" class="btn btn-link btn-xs right"><%= attach.get('name') %></a>
 		</li>
 		<% }); %>
-		<li class="list-group-item">
-		</li>
-		<li class="list-group-item">
-			<span>接收日期</span><span class="right"><%= project.createdAtLong %></span>
-		</li>
-		<li class="list-group-item">
-			<span>质量判断</span><span class="right"><%- project.star %></span>
-		</li>
-		<li class="list-group-item">
-			<span>项目阶段</span><span class="right"><%= project.status %></span>
-		</li>
-		<li class="list-group-item">
-			<span>项目来源</span><span class="right"><%= project.creator %></span>
-		</li>
-		<li class="list-group-item">
-			<span>投资回报</span><span class="right"></span>
-		</li>
-		<li class="list-group-item">
-			<span>联系方式</span><span class="right"><%= project.contact_way %></span>
-		</li>
 	</ul>
+  <div class="form-group">
+    <label class="control-label" for="inputAttachment">上传附件</label>
+    <div class="controls">
+      <input type='file' name='attachment' id='inputAttachment' multiple='true'
+	  accept="application/msword,application/pdf,application/vnd.ms-powerpoint"/>
+    </div>
   </div>
-</div>
-
-<div>
-  <div class="clearfix">
-    <form id="commentForm" class="comment-form" enctype="multipart/form-data"
-          action="/projects/<%= project.id %>/comments" method="post">
-      <div class="form-group">
-        <input type="hidden" id="inputClose" name="close" value="0"/>
-        <label class="control-label" for="inputContent">
-          留言
-          <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
-        </label>
-        <textarea rows="5" name="content" id="inputContent" class="form-control" placeholder="留言内容" required></textarea>
-      </div>
-      <div class="form-group pull-left">
-        <div class="controls">
-          <button type="submit" class="btn btn-primary btn-submit">留言</button>
-		  <button onclick="back();" class="btn btn-default btn-back">返回</button>
-        </div>
-      </div>
-    </form>
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary">提交</button>
+    <a href="/projects" class="btn btn-default">回到项目列表</a>
   </div>
-</div>
 
-<hr>
-
-<% comments.forEach (function(comment){ %>
-<div class="project-comment-wrap">
-  <p class="project-comment-title">
-    <span class="project-user"><b><%= comment.fromuser %></b></span>
-    <span class="project-date bstooltip" title="<%= comment.createdAtLong %>">@ <%= comment.createdAt %></span>
-  </p>
-
-  <div class="ticket-thread-content">
-    <pre><%= comment.content %></pre>
-  </div>
-</div>
-<% }); %>
+</form>
 

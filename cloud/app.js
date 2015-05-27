@@ -89,7 +89,8 @@ function transformUser(t) {
 }
 
 function transformProject(t) {
-	var type = type2showMap[t.get('type')];
+	var rawType = t.get('type');
+	var type = type2showMap[rawType];
 	if (type === undefined) {
 		type = '未知';
 	}
@@ -112,6 +113,7 @@ function transformProject(t) {
 		name: t.get('name'),
 		introdution: t.get('introdution'),
 		type: type,
+		rawType: rawType,
 		creatorId: t.get('creator').id,
 		creator: t.get('creator').get('realName'),
 		status: status,
@@ -212,7 +214,7 @@ app.get('/projects', function (req, res) {
 	}, mutil.renderErrorFn(res));
 });
 
-app.get('/follow', function (req, res) {
+app.get('/projects/follow', function (req, res) {
 	if (!login.isLogin(req)) {
 		res.render('login.ejs');
 		return;
@@ -302,9 +304,142 @@ function createProject(res, client, attachmentFile, name, introdution, type, sta
 	}, renderErrorFn(res));
 }
 
+function updateProject(res, project, attachmentFile, name, introdution, type, status, rating, invest_money, contact_way, then) {
+	//project.set('creator', AV.User.current());
+	project.set('name', name);
+	project.set('introdution', introdution);
+	project.set('type', type);
+	project.set('status', status);
+	project.set('rating', parseInt(rating));
+	project.set('invest_money', invest_money);
+	project.set('contact_way', contact_way);
+	//project.set('create_time', new Date());
+
+	project.save().then(function (project) {
+		if (typeof(attachmentFile.path) == "string") {
+			saveAttach(attachmentFile, function(attach) {
+				var relation = project.relation("attachments");
+				relation.add(attach);
+				project.save();
+			});
+		} else {
+			for (var i = 0, len = attachmentFile.length; i < len; i++) {
+				saveAttach(attachmentFile[i], function(attach){
+					var relation = project.relation("attachments");
+					relation.add(attach);
+					project.save();
+				});
+			}
+		}
+		then();
+	}, renderErrorFn(res));
+}
+
 function isProjectEmpty(project) {
     return !project || project.get('name') == null;
 }
+
+app.get('/projects/:id', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.render('login.ejs');
+		return;
+	}
+    var projectId = req.params.id;
+    var token = req.token;
+    var cid = req.cid;
+	var query = new AV.Query('Project');
+	query.equalTo('objectId', projectId);
+	query.include('creator');
+    query.find().then(function (projects) {
+		if (projects && projects.length > 0) {
+			var project = projects[0];
+			var relation = project.relation("attachments");
+            project = transformProject(project);
+			if (project.creatorId != cid) {
+				res.redirect("/projects/"+projectId+"/comments");
+				return;
+			}
+			relation.query().find({
+				success: function(attachs){
+					res.render('edit', { 
+						project: project, 
+						token: token, 
+						cid: cid,
+						attachs: attachs
+					});
+				}
+			});
+        } else {
+            renderError(res, '找不到项目，该项目可能已经被删除');
+        }
+    }, renderErrorFn(res));
+});
+
+app.post('/projects/:id', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.render('login.ejs');
+		return;
+	}
+	var token = req.token;
+	var projectId = req.params.id;
+	var cid = req.cid;
+	var client = req.client;
+	mlog.log('req name : ' + req.body.name);
+	var attachmentFile = req.files.attachment;
+	
+	var query = new AV.Query('Project');
+	query.equalTo('objectId', projectId);
+	query.include('creator');
+    query.find().then(function (projects) {
+		if (projects && projects.length > 0) {
+			var project = projects[0];
+			if (project.get('creator').id != cid) {
+				res.redirect("/projects/"+projectId+"/comments");
+				return;
+			}
+			updateProject(res, project, attachmentFile, req.body.name, req.body.introdution, req.body.type,
+				req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, function (project) {
+				res.redirect('/projects');
+			});
+		} else {
+			renderError(res, '找不到项目，该项目可能已经被删除');
+		}
+	}, renderErrorFn(res));
+});
+
+app.post('/attach/delete', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var token = req.token;
+	var attachId = req.params.id;
+	var cid = req.cid;
+	var client = req.client;
+	var pid = req.body.pid;
+	var aid = req.body.aid;
+
+	mlog.log(pid);
+	mlog.log(aid);
+	
+	var project = AV.Object.createWithoutData('Project', pid);
+	project.fetch().then(function (project) {
+		if (isProjectEmpty(project) == false) {
+			if (project.get('creator').id != cid) {
+				res.redirect("/projects/"+project.id+"/comments");
+				return;
+			}
+			var relation = project.relation("attachments");
+			var attach = AV.Object.createWithoutData('Attach', aid);
+			relation.remove(attach);
+			project.save();
+			
+			res.redirect("/projects/"+project.id);
+		} else {
+			renderError(res, '找不到附件对应的项目，该项目可能已经被删除');
+		}
+	}, renderErrorFn(res));
+});
 
 app.get('/projects/:id/comments', function (req, res) {
 	if (!login.isLogin(req)) {
@@ -324,7 +459,7 @@ app.get('/projects/:id/comments', function (req, res) {
 		pq.equalTo('objectId', projectId);
 		pq.include('creator');
         pq.find().then(function (projects) {
-			if (projects) {
+			if (projects && projects.length > 0) {
 				var project = projects[0];
 				var relation = project.relation("attachments");
                 project = transformProject(project);
@@ -334,7 +469,7 @@ app.get('/projects/:id/comments', function (req, res) {
                 //var lastOpen = findMyLastOpen(isAdmin, ticket, threads);
 				relation.query().find({
 					success: function(attachs){
-						res.render('edit', { 
+						res.render('item', { 
 							project: project, 
 							token: token, 
 							comments: comments,

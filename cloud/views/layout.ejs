@@ -43,8 +43,7 @@
     </div>
     <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        <li id="site_nav_projects"><a href="/projects">我发起的项目</a></li>
-        <li id="site_nav_follow"><a href="/follow">我参与的项目</a></li>
+        <li id="site_nav_projects"><a href="/projects">项目</a></li>
         <li id="site_nav_contact"><a href="/contact">通讯录</a></li>
         <li id="site_nav_users"><a href="#">所有用户</a></li>
       </ul>
@@ -105,8 +104,8 @@
     });
 
     var site_nav_url = window.location.pathname;
-    var regs = [/^(\/follow|\/admin\/follow).*/, /^(\/projects|\/admin\/projects).*/, /^\/contact.*/];
-    var selectors = ["#site_nav_follow", "#site_nav_projects", "#site_nav_contact"];
+    var regs = [/^(\/projects|\/admin\/projects).*/, /^\/contact.*/];
+    var selectors = ["#site_nav_projects", "#site_nav_contact"];
     for (var i = 0; i < regs.length; i++) {
       if (regs[i].exec(site_nav_url)) {
         $(selectors[i]).addClass('active');

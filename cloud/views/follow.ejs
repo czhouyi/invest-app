@@ -1,7 +1,7 @@
 <div class="clearfix">
   <div class="btn-group pull-left">
     <a href="/projects" class="btn btn-default">我的项目</a>
-    <a href="/follow" class="btn btn-default active">参与项目</a>
+    <a href="/projects/follow" class="btn btn-default active">参与项目</a>
   </div>
   <a class="btn btn-primary" href="/projects/new" style="margin-left: 10px;">发起新项目</a>
 </div>
@@ -87,7 +87,7 @@
 		}
 		param += "rating="+rating;
 	  }
-	  location.href = "/follow?"+param;
+	  location.href = "/projects/follow?"+param;
   }
 
   $('#inputType').on('change', function() {
