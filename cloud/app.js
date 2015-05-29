@@ -339,7 +339,7 @@ function isProjectEmpty(project) {
     return !project || project.get('name') == null;
 }
 
-app.get('/projects/:id', function (req, res) {
+app.get('/projects/edit/:id', function (req, res) {
 	if (!login.isLogin(req)) {
 		res.render('login.ejs');
 		return;
