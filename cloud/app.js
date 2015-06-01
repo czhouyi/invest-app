@@ -40,6 +40,7 @@ app.use(app.router);
 var Project = AV.Object.extend('Project');
 var Attach = AV.Object.extend("Attach");
 var Follower = AV.Object.extend("_Follower");
+var limit = 10;
 var type2showMap = {
 	'O2O': 'O2O',
 	'EDUCATION': '教育',
@@ -59,6 +60,10 @@ var renderErrorFn = mutil.renderErrorFn;
 var renderForbidden = mlog.renderForbidden;
 var renderInfo = mutil.renderInfo;
 
+function is_admin(req) {
+	return req.admin;
+}
+
 function formatTime(t) {
 	var date = moment(t).fromNow();
 	var cleanDate = '<span class="form-cell-date">' + moment(t).format('YYYY-MM-DD') + '</span> <span class="form-cell-time">' + moment(t).format('HH:mm:ss') + '</span>';
@@ -70,17 +75,21 @@ function formatTimeLong(t) {
 	return date;
 }
 
+function nnStr(obj) {
+	return obj ? obj : '';
+}
+
 function transformUser(t) {
 	return {
 		id: t.id,
-		username: t.get('username'),
-		email: t.get('email')==undefined ? '' : t.get('email'),
-		school: t.get('school'),
-		phone: t.get('phone'),
-		work: t.get('work'),
+		username: nnStr(t.get('username')),
+		email: nnStr(t.get('email')),
+		school: nnStr(t.get('school')),
+		phone: nnStr(t.get('phone')),
+		work: nnStr(t.get('work')),
 		avatar: t.get('avatar') ? t.get('avatar').url() : '',
-		realName: t.get('realName'),
-		company: t.get('company'),
+		realName: nnStr(t.get('realName')),
+		company: nnStr(t.get('company')),
 		ccnt: 0,
 		pcnt: 0,
 		gcnt: 0,
@@ -101,6 +110,9 @@ function transformProject(t) {
 	}
 
 	var rating_int = parseInt(t.get('rating'));
+	if (!rating_int || rating_int < 0) {
+		rating_int = 0;
+	}
 	var star = "";
 	for (var i = 0; i < rating_int; i++) {
 		star += '<span class="glyphicon glyphicon-star"></span>';
@@ -110,18 +122,18 @@ function transformProject(t) {
 	}
 	return {
 		id: t.id,
-		name: t.get('name'),
-		introdution: t.get('introdution'),
+		name: nnStr(t.get('name')),
+		introdution: nnStr(t.get('introdution')),
 		type: type,
 		rawType: rawType,
 		creatorId: t.get('creator').id,
 		creator: t.get('creator').get('realName'),
 		status: status,
 		rawStatus: rawStatus,
-		rating: t.get('rating'),
+		rating: nnStr(t.get('rating')),
 		star: star,
-		invest_money: t.get('invest_money') ? t.get('invest_money') : '',
-		contact_way: t.get('contact_way') ? t.get('contact_way') : '',
+		invest_money: nnStr(t.get('invest_money')),
+		contact_way: nnStr(t.get('contact_way')),
 		createdAt: formatTime(t.createdAt),
 		createdAtLong: formatTimeLong(t.createdAt),
 		createdAtUnix: moment(t.createdAt).valueOf()
@@ -145,7 +157,7 @@ function transformComment(t) {
 	var touser = t.get('touser');
     return {
         id: t.id,
-        content: t.get('content'),
+        content: nnStr(t.get('content')),
         fromuser: fromuser ? fromuser.get('username') : '',
 		fromid: fromuser ? fromuser.id : '',
 		touser: touser ? touser.get('username') : '',
@@ -187,65 +199,125 @@ function saveFileThen(req, f) {
 
 app.get('/projects', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
 	var type = req.query.type;
 	var status = req.query.status;
 	var rating = req.query.rating;
 	var token = req.token;
-	
+	var page = parseInt(req.query.page);
+	if (!page) {
+		page = 1;
+	}
+	if (page < 1) {
+		page = 1;
+	}
+
 	var query = new AV.Query('Project');
 	query.ascending('status');
 	query.descending('createdAt');
 	query.equalTo('creator', AV.User.current());
-	query.equalTo('type', type);
-	query.equalTo('status', status);
+	if (type) {
+		query.equalTo('type', type);
+	}
+	if (status) {
+		query.equalTo('status', status);
+	}
 	if (rating) {
 		query.equalTo('rating', parseInt(rating));
 	}
-	query.find().then(function(projects) {
-		projects = projects || [];
-		projects = _.map(projects, transformProject);
-		res.render('list', {
-			projects: projects,
-			token: token
-		});
-	}, mutil.renderErrorFn(res));
+	query.count({
+		success: function(count) {
+			var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+			if (page > pageCount) {
+				page = pageCount;
+			}
+			var skip = (page - 1) * limit;
+			query.limit(limit);
+			query.skip(skip);
+			
+			query.find().then(function(projects) {
+				projects = projects || [];
+				projects = _.map(projects, transformProject);
+				res.render('list', {
+					projects: projects,
+					page: page,
+					pageCount: pageCount,
+					type: type,
+					status: status,
+					rating: rating,
+					isAdmin: isAdmin,
+					token: token
+				});
+			}, mutil.renderErrorFn(res));
+		}
+	});
 });
 
 app.get('/projects/follow', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
 	var type = req.query.type;
 	var status = req.query.status;
 	var rating = req.query.rating;
 	var token = req.token;
+	var page = parseInt(req.query.page);
+	if (!page) {
+		page = 1;
+	}
+	if (page < 1) {
+		page = 1;
+	}
 	
 	var query = new AV.Query('Project');
 	query.ascending('status');
 	query.descending('createdAt');
 	query.equalTo('group', AV.User.current());
-	query.equalTo('type', type);
-	query.equalTo('status', status);
+	if (type) {
+		query.equalTo('type', type);
+	}
+	if (status) {
+		query.equalTo('status', status);
+	}
 	if (rating) {
 		query.equalTo('rating', parseInt(rating));
 	}
-	query.find().then(function(projects) {
-		projects = projects || [];
-		projects = _.map(projects, transformProject);
-		res.render('follow', {
-			projects: projects,
-			token: token
-		});
-	}, mutil.renderErrorFn(res));
+	query.count({
+		success: function(count) {
+			var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+			if (page > pageCount) {
+				page = pageCount;
+			}
+			var skip = (page - 1) * limit;
+			query.limit(limit);
+			query.skip(skip);
+			
+			query.find().then(function(projects) {
+				projects = projects || [];
+				projects = _.map(projects, transformProject);
+				res.render('follow', {
+					projects: projects,
+					page: page,
+					pageCount: pageCount,
+					type: type,
+					status: status,
+					rating: rating,
+					isAdmin: isAdmin,
+					token: token
+				});
+			}, mutil.renderErrorFn(res));
+		}
+	});
 });
 
 app.post('/projects', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
 	var token = req.token;
@@ -341,9 +413,10 @@ function isProjectEmpty(project) {
 
 app.get('/projects/edit/:id', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
     var projectId = req.params.id;
     var token = req.token;
     var cid = req.cid;
@@ -365,6 +438,7 @@ app.get('/projects/edit/:id', function (req, res) {
 						project: project, 
 						token: token, 
 						cid: cid,
+						isAdmin: isAdmin,
 						attachs: attachs
 					});
 				}
@@ -377,7 +451,7 @@ app.get('/projects/edit/:id', function (req, res) {
 
 app.post('/projects/:id', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
 	var token = req.token;
@@ -443,9 +517,10 @@ app.post('/attach/delete', function (req, res) {
 
 app.get('/projects/:id/comments', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
     var projectId = req.params.id;
     var token = req.token;
     var cid = req.cid;
@@ -464,13 +539,11 @@ app.get('/projects/:id/comments', function (req, res) {
 				var relation = project.relation("attachments");
                 project = transformProject(project);
                 comments = _.map(comments, transformComment);
-                //ticket.visible = judgeVisibleForOne(open, isAdmin, cid, ticket.cid);
-                //judgeVisible(threads, isAdmin, cid, ticket.cid);
-                //var lastOpen = findMyLastOpen(isAdmin, ticket, threads);
 				relation.query().find({
 					success: function(attachs){
 						res.render('item', { 
 							project: project, 
+							isAdmin: isAdmin,
 							token: token, 
 							comments: comments,
 							cid: cid,
@@ -509,13 +582,15 @@ app.post('/projects/:id/comments', function (req, res) {
 
 app.get('/projects/new', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
 	var token = req.token;
 	var client = req.client;
 	res.render('new', {
 		token: token,
+		isAdmin: isAdmin,
 		client: client
 	});
 });
@@ -526,15 +601,32 @@ app.get('/', function (req, res) {
 
 app.get('/contact', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
 	var cid = req.cid;
 	var client = req.client;
+	var page = parseInt(req.query.page);
+	if (!page) {
+		page = 1;
+	}
+	if (page < 1) {
+		page = 1;
+	}
+
 	var query = new AV.Query(Follower);
 	query.equalTo("user", AV.User.current());
-	query.find({
-		success: function(results) {
+	query.count().then(function(count){
+		var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+		if (page > pageCount) {
+			page = pageCount;
+		}
+		var skip = (page - 1) * limit;
+		query.limit(limit);
+		query.skip(skip);
+
+		query.find().then(function(results) {
 			var userIds = [];
 			for (var i = 0, len = results.length; i < len; i++) {
 				userIds[i] = results[i].get('follower').id;
@@ -542,37 +634,93 @@ app.get('/contact', function (req, res) {
 
 			var q = new AV.Query(AV.User);
 			q.containedIn("objectId", userIds);
-			q.find({
-				success: function(users) {
-					var subf = " in (select follower from _Follower where user=pointer('_User', ?)) ";
-					// 好友发起项目查询
-					AV.Query.doCloudQuery("select * from Project where creator " + subf, [cid], {
-						success: function(result){
-							var cps = result.results;
-							// 好友参加项目查询
-							AV.Query.doCloudQuery("select * from Project where group " + subf, [cid], {
-								success: function(result){
-									var gps = result.results;
-									// 好友邀请我参与项目查询
-									AV.Query.doCloudQuery("select * from Project where group in (select * from _User where objectId=?) and creator " + subf, [cid, cid], {
-										success: function(result) {
-											var mps = result.results;
-											users = _.map(users, transformUser);
-											users = countUp(users, cps, gps, mps);
-											res.render('contact', {users: users, client: client});
-										}
-									});
-								}
+			q.find().then(function(users) {
+				var subf = " in (select follower from _Follower where user=pointer('_User', ?)) ";
+				// 好友发起项目查询
+				AV.Query.doCloudQuery("select * from Project where creator " + subf, [cid]).then(function(result){
+					var cps = result.results;
+					// 好友邀请我参与项目查询
+					AV.Query.doCloudQuery("select * from Project where group in (select * from _User where objectId=?) and creator " + subf, [cid, cid]).then(function(result){
+						var mps = result.results;
+						users = _.map(users, transformUser);
+						users = countUp(users, cps, mps);
+						// 参加项目查询
+						gcnt(users, users.length-1, function() {
+							res.render('user', {
+								users: users, 
+								page: page,
+								pageCount: pageCount,
+								isAdmin: isAdmin,
+								client: client
 							});
-						}
-					});
-				}
+						});
+					},mutil.renderErrorFn(res));
+				}, mutil.renderErrorFn(res));
 			}, mutil.renderErrorFn(res));
-		}
+		}, mutil.renderErrorFn(res));
 	}, mutil.renderErrorFn(res));
 });
 
-function countUp(users, cps, gps, mps) {
+app.get('/users', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var isAdmin = is_admin(req);
+	if (!isAdmin) {
+		res.redirect('/contact');
+		return;
+	}
+	var cid = req.cid;
+	var client = req.client;
+	var page = parseInt(req.query.page);
+	if (!page) {
+		page = 1;
+	}
+	if (page < 1) {
+		page = 1;
+	}
+
+	var query = new AV.Query(AV.User);
+	query.count({
+		success: function(count) {
+			var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+			if (page > pageCount) {
+				page = pageCount;
+			}
+			var skip = (page - 1) * limit;
+			query.limit(limit);
+			query.skip(skip);
+
+			query.find().then(function(users) {
+				var userIds = [];
+				for (var i = 0, len = users.length; i < len; i++) {
+					userIds[i] = users[i].id;
+				}
+
+				// 发起项目查询
+				var createq = new AV.Query(Project);
+				createq.matchesQuery("creator", query);
+				createq.find().then(function(cps){
+					users = _.map(users, transformUser);
+					users = countUp1(users, cps);
+					// 参加项目查询
+					gcnt(users, users.length-1, function() {
+						res.render('user', {
+							users: users, 
+							page: page,
+							pageCount: pageCount,
+							isAdmin: isAdmin,
+							client: client
+						});
+					});
+				}, mutil.renderErrorFn(res));
+			}, mutil.renderErrorFn(res));
+		}
+	});
+});
+
+function countUp(users, cps, mps) {
 	if(cps){
 		for (var i = 0, li = cps.length; i < li; i++) {
 			var cp = cps[i];
@@ -584,24 +732,6 @@ function countUp(users, cps, gps, mps) {
 						user.pcnt++;
 					}
 				}
-			}
-		}
-	}
-	if(gps){
-		for (var i = 0, li = gps.length; i < li; i++) {
-			var gp = gps[i];
-			for (var j = 0, lj = users.length; j < lj; j++) {
-				var user = users[j];
-				var relation = gp.relation('group');
-				relation.query().find({
-					success: function(list){
-						for(var k = 0, lk = list.length; k < lk; k++) {
-							if (user.id == list[0].id) {
-								user.gcnt++;
-							}
-						}
-					}
-				});
 			}
 		}
 	}
@@ -620,11 +750,43 @@ function countUp(users, cps, gps, mps) {
 	return users;
 }
 
+function countUp1(users, cps) {
+	if(cps){
+		for (var i = 0, li = cps.length; i < li; i++) {
+			var cp = cps[i];
+			for (var j = 0, lj = users.length; j < lj; j++) {
+				var user = users[j];
+				if (user.id == cp.get('creator').id) {
+					user.ccnt++;
+					if (cp.get('status')=='COMPLETE') {
+						user.pcnt++;
+					}
+				}
+			}
+		}
+	}
+
+	return users;
+}
+
+function gcnt(users, index, f) {
+	var cql = "select count(*) from Project where group in (select * from _User where objectId=?)";
+	AV.Query.doCloudQuery(cql, [users[index].id]).then(function(result) {
+		users[index].gcnt = result.count;
+		if (index > 0) {
+			gcnt(users, index - 1, f);
+		} else {
+			f();
+		}
+	});
+}
+
 app.get('/contact/profile/:uid', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
 	var uid = req.params.uid;
 	var client = req.client;
 	var query = new AV.Query(AV.User);
@@ -635,31 +797,29 @@ app.get('/contact/profile/:uid', function (req, res) {
 			AV.Query.doCloudQuery("select count(*), * from Project where creator=pointer('_User', ?)", [uid], {
 				success: function(result){
 					var crs = result.results;
-					var ccnt = result.count; // 发起项目数量
+					user.ccnt = result.count; // 发起项目数量
 
-					var mcnt = 0; // 邀请我参与项目数量
-					var pcnt = 0; // 完成融资项目数量
 					var mrs = []; // 邀请我参与项目集合
 
-					for (var i = 0; i < ccnt; i++) {
+					for (var i = 0; i < user.ccnt; i++) {
 						var p = crs[i];
 						if (p.get('status') == "COMPLETE") {
-							pcnt++;
+							user.pcnt++; // 完成融资项目数量
 						}
 					}
 
 					AV.Query.doCloudQuery("select count(*) from Project where group in (select * from _User where objectId=?)", [uid], {
 						success: function(result){
 							var grs = result.results;
-							var gcnt = result.count; // 参与项目数量
+							user.gcnt = result.count; // 参与项目数量
 
 							AV.Query.doCloudQuery("select count(*), * from Project where creator=pointer('_User', ?) and group in (select * from _User where objectId=?)", [uid, cid], {
 								success: function(result){
 									var mrs = result.results; // 邀请我参加项目集合
 									mrs = _.map(mrs, transformProject);
-									var mcnt = result.count; // 邀请我参与项目数量
+									user.mcnt = result.count; // 邀请我参与项目数量
 
-									res.render('profile', {user: user, ccnt: ccnt, gcnt: gcnt, pcnt: pcnt, mcnt: mcnt, mrs: mrs});
+									res.render('profile', {user: user, mrs: mrs, isAdmin: isAdmin});
 								}
 							});
 						}
@@ -672,9 +832,10 @@ app.get('/contact/profile/:uid', function (req, res) {
 
 app.get('/search', function (req, res) {
 	if (!login.isLogin(req)) {
-		res.render('login.ejs');
+		res.redirect('/login');
 		return;
 	}
+	var isAdmin = is_admin(req);
     var content = req.query.content;
     if (content == null || content == '') {
         res.redirect('/search?content=AVObject&page=1');
@@ -694,7 +855,7 @@ app.get('/search', function (req, res) {
     var searchContent = content;
     mlog.log('c=' + searchContent);
     AV.Cloud.httpRequest({
-        url: 'https://cn.avoscloud.com/1.1/search/select?limit=' + total + '&clazz=Project&q=' + searchContent,
+        url: 'https://cn.avoscloud.com/1.1/search/select?limit=' + total + '&clazz=Project&q=' + encodeURI(searchContent),
         headers: {
             'Content-Type': 'application/json',
             'X-AVOSCloud-Application-Id': config.applicationId,
@@ -709,7 +870,15 @@ app.get('/search', function (req, res) {
             projects = projects.splice(skip);
             projects = _.map(projects, transformSearchProject);
 			//renderError(res, tickets);
-            res.render('search', { projects: projects, content:content, searchPage:true});
+            var prevPage, nextPage;
+            if (page > 1) {
+                prevPage = page - 1;
+            } else {
+                prevPage = 1;
+            }
+            nextPage = page + 1;
+            res.render('search', {isAdmin: isAdmin, projects: projects, content:content, searchPage:true,
+				page: page, prevPage: prevPage, nextPage: nextPage});
         },
         error: function (httpResponse) {
             renderError(res, 'Search error.' + httpResponse);
@@ -727,7 +896,7 @@ app.get('/login', function (req, res) {
 	if (login.isLogin(req)) {
 		res.redirect('/projects');
 	} else {
-		res.render('login.ejs');
+		res.render('login.ejs', {isAdmin: is_admin(req)});
 	}
 });
 
@@ -777,7 +946,7 @@ app.get('/register', function (req, res) {
 	if (login.isLogin(req)) {
 		res.redirect('/projects');
 	} else {
-		res.render('register.ejs');
+		res.render('register.ejs',{isAdmin: is_admin(req)});
 	}
 });
 

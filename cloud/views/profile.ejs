@@ -8,9 +8,9 @@
 				<h3><%= user.realName %></h3>
 				<table class="text-center">
 					<tr class="text-center text-bold">
-						<td><%= ccnt %></td>
-						<td><%= gcnt %></td>
-						<td><%= pcnt %></td>
+						<td><%= user.ccnt %></td>
+						<td><%= user.gcnt %></td>
+						<td><%= user.pcnt %></td>
 					</tr>
 					<tr class="text-center">
 						<td>发起项目</td>
@@ -44,7 +44,7 @@
   <div class="col-md-9">
 	<ul class="list-group">
 		<li class="list-group-item">
-			<span>邀请我参与 <b><%= mcnt %></b> 个项目</span>
+			<span>邀请我参与 <b><%= user.mcnt %></b> 个项目</span>
 		</li>
 		<% mrs.forEach(function (mr){ %>
 		<li class="list-group-item">

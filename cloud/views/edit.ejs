@@ -67,7 +67,8 @@
       <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
     </label>
     <div class="controls">
-      <input type="number" name="rating" id="inputRating" max="5" min="0" value="<%= project.rating %>" class="form-control" placeholder="项目评分" required>
+      <input class="rating" name="rating" id="inputRating" data-max="5" data-min="0" data-step="1"
+		data-show-clear="true" data-show-caption="false" data-size="xs" value="<%= project.rating %>">
     </div>
   </div>
   <div class="form-group">
