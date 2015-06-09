@@ -1,0 +1,88 @@
+
+<div class="row">
+  <div class="col-md-3">
+	<ul class="list-group">
+		<li class="list-group-item">
+			<div class="contact-table" align="center">
+				<img src="<%= user.avatar %>" height="80" width="80" onerror="javascript:this.src='/images/avatar.png'" />
+				<h3><%= user.realName %></h3>
+				<table class="text-center">
+					<tr class="text-center text-bold">
+						<td><%= user.ccnt %></td>
+						<td><%= user.gcnt %></td>
+						<td><%= user.pcnt %></td>
+					</tr>
+					<tr class="text-center">
+						<td>发起项目</td>
+						<td>参与项目</td>
+						<td>完成投资</td>
+					</tr>
+				</table>
+			</div>
+		</li>
+		<li class="list-group-item">
+			<span>用户名</span><span style="float:right;"><%= user.username %></span>
+		</li>
+		<li class="list-group-item">
+			<span>手机</span><span style="float:right;"><%= user.phone %></span>
+		</li>
+		<li class="list-group-item">
+			<span>就业</span><span style="float:right;"><%= user.work %></span>
+		</li>
+		<li class="list-group-item">
+			<span>就职公司</span><span style="float:right;"><%= user.company %></span>
+		</li>
+		<li class="list-group-item">
+			<span>毕业学校</span><span style="float:right;"><%= user.school %></span>
+		</li>
+		<li class="list-group-item">
+			<span>联系邮箱</span><span style="float:right;"><%= user.email %></span>
+		</li>
+	</ul>
+  </div>
+
+  <div class="col-md-9">
+	<ul id="myTab" class="nav nav-tabs">
+      <li class="active">
+	    <a href="#home" data-toggle="tab">我发起 <b><%= user.ccnt %></b> 个项目</a>
+	  </li>
+	  <li>
+	    <a href="#ios" data-toggle="tab">我参与 <b><%= user.gcnt %></b> 个项目</a>
+	  </li>
+	</ul>
+	<div class="tab-content">
+	  <div class="tab-pane fade in active" id="home">
+	    <ul class="list-group">
+		  <% crs.forEach(function (cr){ %>
+		  <li class="list-group-item">
+			<span><%- cr.star %></span><br>
+			<h3>
+			<a href="/projects/<%= cr.id %>/comments"><%= cr.name %></a><br>
+			<small><%= cr.introdution %></small>
+			</h3>
+			<span>项目状态：<%= cr.status %></span>
+			<span class="bstooltip" title="<%= cr.createdAtLong %>" style="float:right;">@ <%= cr.createdAt %></span>
+		  </li>
+		  <% }); %>
+	    </ul>
+	  </div>
+	  <div class="tab-pane fade in" id="ios">
+	    <ul class="list-group">
+		  <% grs.forEach(function (gr){ %>
+		  <li class="list-group-item">
+			<span><%- gr.star %></span><br>
+			<h3>
+			<a href="/projects/<%= gr.id %>/comments"><%= gr.name %></a><br>
+			<small><%= gr.introdution %></small>
+			</h3>
+			<span>项目状态：<%= gr.status %></span>
+			<span class="bstooltip" title="<%= gr.createdAtLong %>" style="float:right;">@ <%= gr.createdAt %></span>
+		  </li>
+		  <% }); %>
+	    </ul>
+	  </div>
+	</div>
+  </div>
+
+</div>
+<!-- .row -->

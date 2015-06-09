@@ -4,33 +4,51 @@
       return str == null || str == '';
     }
 
+	$(document).ready(function () {  
+		if ($.cookie("remember") == "true") {  
+			$("#inputRemember")[0].checked = true;  
+			$("#inputUsername").val($.cookie("username"));  
+			$("#inputPassword").val($.cookie("password"));  
+		}  
+	});
 
     $('#loginForm').submit(function (event) {
-      var username = $('#usernameInput').val();
+      var username = $('#inputUsername').val();
       if (empty(username)) {
         alert('用户名不能为空');
         return false;
       }
-      var password = $('#passwordInput').val();
+      var password = $('#inputPassword').val();
       if (empty(password)) {
         alert('密码不能为空');
         return false;
       }
+	  if ($("#inputRemember")[0].checked) {  
+		var str_username = $("#inputUsername").val();
+		var str_password = $("#inputPassword").val();
+		$.cookie("remember", "true", { expires: 15 });  
+		$.cookie("username", str_username, { expires: 15 });
+		$.cookie("password", str_password, { expires: 15 });
+	  } else {
+		$.cookie("remember", "false", { expires: -1 });
+		$.cookie("username", "", { expires: -1 });
+		$.cookie("password", "", { expires: -1 });
+	  }
       return true;
     });
   });
 </script>
 
-<div class="container  text-center ">
-
-  <form id="loginForm" class="search-form-middle" action="/login" method="POST">
-    <p>用户名：<input id="usernameInput" name="username" type="text"/></p>
-
-    <p>密码&nbsp;&nbsp;&nbsp;&nbsp;：<input id="passwordInput" name="password" type="password"/></p>
-
-    <div >
-      <input class="btn btn-default login-btn-width" name="go" type="submit" value="登录">
-      <a class="btn btn-default login-btn-width" href="/register">注册</a>
-    </div>
-  </form>
+<div class="container">
+	<form id="loginForm" class="form-signin" action="/login" method="POST">
+	    <h2 class="form-signin-heading">投资之家<small> | 登录 </small></h2>
+		<label for="inputEmail" class="sr-only">用户名</label>
+		<input type="text" name="username" id="inputUsername" class="form-control" placeholder="用户名" required autofocus>
+		<label for="inputPassword" class="sr-only">密码</label>
+		<input type="password" id="inputPassword" name="password" class="form-control" placeholder="密码" required>
+		<div class="checkbox">
+			<label><input id="inputRemember" type="checkbox" value="remember-me"> 记住账号 </label>
+		</div>
+		<button class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+	</form>
 </div>

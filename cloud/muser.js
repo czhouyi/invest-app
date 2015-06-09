@@ -64,6 +64,7 @@ function updateCurUser(map) {
 function transfromUser(curUser) {
   return {
     username:curUser.get('username'),
+	realName:curUser.get('realName'),
     id:curUser.id,
     qq:curUser.get('qq'),
     email:curUser.get('email'),

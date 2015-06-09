@@ -781,6 +781,44 @@ function gcnt(users, index, f) {
 	});
 }
 
+app.get('/contact/me', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var isAdmin = is_admin(req);
+	var client = req.client;
+	var query = new AV.Query(AV.User);
+	var cid = req.cid;
+	query.get(cid, {
+		success : function(user) {
+			user = transformUser(user);
+			AV.Query.doCloudQuery("select count(*), * from Project where creator=pointer('_User', ?)", [cid], {
+				success: function(result){
+					var crs = _.map(result.results, transformProject);
+					user.ccnt = result.count; // 发起项目数量
+
+					for (var i = 0; i < user.ccnt; i++) {
+						var p = crs[i];
+						if (p.rawStatus == "COMPLETE") {
+							user.pcnt++; // 完成融资项目数量
+						}
+					}
+
+					AV.Query.doCloudQuery("select count(*), * from Project where group in (select * from _User where objectId=?)", [cid], {
+						success: function(result){
+							var grs = _.map(result.results, transformProject);
+							user.gcnt = result.count; // 参与项目数量
+
+							res.render('me', {user: user, crs: crs, grs: grs, isAdmin: isAdmin});
+						}
+					});
+				}
+			});
+		}
+	});
+});
+
 app.get('/contact/profile/:uid', function (req, res) {
 	if (!login.isLogin(req)) {
 		res.redirect('/login');
@@ -900,7 +938,7 @@ app.get('/login', function (req, res) {
 	}
 });
 
-app.post('/register', function (req, res) {
+/*app.post('/register', function (req, res) {
 	var username = req.body.username;
 	var password = req.body.password;
 	var email = req.body.email;
@@ -927,7 +965,7 @@ app.post('/register', function (req, res) {
 	} else {
 		mutil.renderError(res, '不能为空');
 	}
-});
+});*/
 
 app.post('/login', function (req, res) {
 	var username = req.body.username;
@@ -942,13 +980,13 @@ app.post('/login', function (req, res) {
 	});
 });
 
-app.get('/register', function (req, res) {
+/*app.get('/register', function (req, res) {
 	if (login.isLogin(req)) {
 		res.redirect('/projects');
 	} else {
 		res.render('register.ejs',{isAdmin: is_admin(req)});
 	}
-});
+});*/
 
 app.get('/logout', function (req, res) {
 	AV.User.logOut();
