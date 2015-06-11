@@ -934,7 +934,7 @@ app.get('/login', function (req, res) {
 	if (login.isLogin(req)) {
 		res.redirect('/projects');
 	} else {
-		res.render('login.ejs', {isAdmin: is_admin(req)});
+		res.render('login.ejs', {error: '', isAdmin: is_admin(req)});
 	}
 });
 
@@ -975,7 +975,9 @@ app.post('/login', function (req, res) {
 			res.redirect('/projects');
 		},
 		error: function (user, error) {
-			mutil.renderError(res, error.message);
+			error.message = '用户名密码不正确';
+			res.render('login.ejs', {error: error.message, isAdmin: is_admin(req)});
+			//mutil.renderError(res, error.message);
 		}
 	});
 });

@@ -3,77 +3,19 @@
   var enterKey=13,xKey=88,sKey=83,escKey=27,semiKey=186,wKey=87;
   var esc;
   $(function () {
-
-    function checkContentOk(content) {
-      var secret = $("#inputOpen").is(":checked");
-      if (secret == false && existsAppIdOrKey(content)) {
-        alert('检测到含有 AppId 或 AppKey，请勾选「仅管理员可见」');
-        return false;
-      } else {
-        return true;
-      }
+    function empty(str) {
+      return str == null || str == '';
     }
 
-    $("#threadForm").submit(function (event) {
-      var $form = $(this),
-        content = $form.find("textarea[id='inputContent']").val();
-      if (content == '' && $("#inputClose").val() != '1') {
-        alert("回复不能为空");
+    $('#commentForm').submit(function (event) {
+      var content = $('#inputContent').val();
+      if (empty(content)) {
+		swal("填写提示", "留言不能为空!", "warning");
+		$('#inputContent').focus();
         return false;
       }
-      return checkContentOk(content);
+      return true;
     });
-
-    $("#deleteForm").submit(function (event) {
-      return confirm('确认删除吗？');
-    });
-
-    function ctrlOrMeta(e){
-      return e.ctrlKey || e.metaKey;
-    }
-
-    $('#inputContent').keydown(function (e) {
-      if (ctrlOrMeta(e) && e.keyCode == enterKey) {
-        // Ctrl-Enter pressed
-        $("#threadForm").submit();
-        return false;
-      }else if(ctrlx && ctrlOrMeta(e) && e.keyCode==sKey){
-        $("#threadForm").submit();
-        return false;
-      }else if(ctrlOrMeta(e) && e.keyCode==xKey){
-        ctrlx=true;
-      }
-      /*if(e.keyCode==escKey){
-        console.log('esc key');
-        esc=true;
-      }
-      if(esc && e.keyCode==wKey){
-        console.log('semi key');
-        $("#threadForm").submit();
-        return false;
-      }*/
-    }).keyup(function(e){
-      if(e.keyCode!=xKey){
-        ctrlx=false;
-      }
-      /*if(e.keyCode!=escKey){
-        esc=false;
-      }
-      if(e.keyCode==wKey){
-        console.log('return false');
-        return false;
-      }*/
-    });
-
-    $("#closeBtn").click(function (event) {
-
-      function close() {
-        $("#inputClose").val("1");
-        $("#threadForm").submit();
-      }
-
-    });
-
   });
 </script>
 
@@ -132,20 +74,19 @@
     <form id="commentForm" class="comment-form" enctype="multipart/form-data"
           action="/projects/<%= project.id %>/comments" method="post">
       <div class="form-group">
-        <input type="hidden" id="inputClose" name="close" value="0"/>
         <label class="control-label" for="inputContent">
           留言
           <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
         </label>
-        <textarea rows="5" name="content" id="inputContent" class="form-control" placeholder="留言内容" required></textarea>
+        <textarea rows="5" name="content" id="inputContent" class="form-control" placeholder="留言内容" ></textarea>
       </div>
       <div class="form-group pull-left">
         <div class="controls">
           <button type="submit" class="btn btn-primary btn-submit">留言</button>
-		  <button onclick="back();" class="btn btn-default btn-back">返回</button>
         </div>
       </div>
     </form>
+	<button onclick="back();" class="btn btn-default btn-back">返回</button>
   </div>
 </div>
 

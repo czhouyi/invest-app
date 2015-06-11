@@ -1,6 +1,25 @@
 
 <script type="text/javascript">
   $(function () {
+    function empty(str) {
+      return str == null || str == '';
+    }
+
+    $('#projectForm').submit(function (event) {
+      var name = $('#inputName').val();
+      if (empty(name)) {
+		swal("填写提示", "项目名称不能为空!", "warning");
+		$('#inputName').focus();
+        return false;
+      }
+      var introdution = $('#inputIntrodution').val();
+      if (empty(introdution)) {
+		swal("填写提示", "项目描述不能为空!", "warning");
+		$('#inputIntrodution').focus();
+        return false;
+      }
+      return true;
+    });
 
     $('#inputIntrodution').keydown(function (e) {
 
@@ -29,7 +48,7 @@
       <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
     </label>
     <div class="controls">
-      <input type="text" name="name" id="inputName" class="form-control" placeholder="项目名称" required>
+      <input type="text" name="name" id="inputName" class="form-control" placeholder="项目名称">
     </div>
   </div>
   <div class="form-group">
@@ -64,7 +83,6 @@
   <div class="form-group">
     <label class="control-label" for="inputRating">
 	  评分
-      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
     </label>
     <div class="controls">
       <input class="rating" name="rating" id="inputRating" data-max="5" data-min="0" data-step="1"
@@ -94,7 +112,7 @@
       <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
     </label>
     <div class="controls">
-      <textarea rows="10" cols="20" name="introdution" id="inputIntrodution" class="form-control" placeholder="项目描述" required></textarea>
+      <textarea rows="10" cols="20" name="introdution" id="inputIntrodution" class="form-control" placeholder="项目描述" ></textarea>
     </div>
   </div>
   <div class="form-group">
