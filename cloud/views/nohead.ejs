@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>投资之家</title>
+  <% include head %>
+
+  <script>
+    function back(){
+      if(document.referrer=='' ||document.referrer==window.location){
+        window.location='/projects'
+      }else{
+        history.back()
+      }
+    }
+  </script>
+</head>
+<body>
+
+<div class="container">
+  <%- body %>
+</div>
+
+</body>
+</html>
