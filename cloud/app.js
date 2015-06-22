@@ -829,6 +829,10 @@ app.get('/contact/profile/:uid', function (req, res) {
 	var client = req.client;
 	var query = new AV.Query(AV.User);
 	var cid = req.cid;
+	if (uid == cid) {
+		res.redirect('/contact/me');
+		return;
+	}
 	query.get(uid, {
 		success : function(user) {
 			user = transformUser(user);
@@ -866,6 +870,101 @@ app.get('/contact/profile/:uid', function (req, res) {
 			});
 		}
 	});
+});
+
+app.get('/users/edit/:id', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var isAdmin = is_admin(req);
+	if (!isAdmin) {
+		res.redirect('/contact');
+		return;
+	}
+    var uid = req.params.id;
+    var token = req.token;
+    var cid = req.cid;
+	var query = new AV.Query(AV.User);
+    query.get(uid).then(function (user) {
+		user = transformUser(user);
+		if (user) {
+			res.render('user_edit', { 
+				user: user, 
+				token: token, 
+				cid: cid,
+				isAdmin: isAdmin
+			});
+        } else {
+            renderError(res, '找不到用户，该用户可能已经被删除');
+        }
+    }, renderErrorFn(res));
+});
+
+app.post('/users/edit/:id', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var isAdmin = is_admin(req);
+	if (!isAdmin) {
+		res.redirect('/contact');
+		return;
+	}
+    var uid = req.params.id;
+    var token = req.token;
+    var cid = req.cid;
+	var query = new AV.Query(AV.User);
+    query.get(uid).then(function (user) {
+		if (user) {
+			updateUser(res, user, req.body.username, req.body.realName, req.body.phone,
+				req.body.email, req.body.school, req.body.company, req.body.work, function (user) {
+				res.redirect('/users');
+			});
+		} else {
+			renderError(res, '找不到用户，该用户可能已经被删除');
+		}
+	}, renderErrorFn(res));
+});
+
+function updateUser(res, user, username, realName, phone, email, school, company, work, then) {
+	user.set('username', username);
+	user.set('realName', realName);
+	user.set('phone', phone);
+	user.set('email', email);
+	user.set('school', school);
+	user.set('company', company);
+	user.set('work', work);
+
+	user.save().then(function (user) {
+		then();
+	}, renderErrorFn(res));
+}
+
+app.post('/users/delete/:uid', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var isAdmin = is_admin(req);
+	if (!isAdmin) {
+		res.redirect('/contact');
+		return;
+	}
+	var uid = req.params.uid;
+	var client = req.client;
+	var query = new AV.Query(AV.User);
+	var cid = req.cid;
+	
+    query.get(uid).then(function (user) {
+		if (user) {
+			user.destroy().then(function(user) {
+				
+			}, renderErrorFn(res));
+		} else {
+			renderError(res, '找不到用户，该用户可能已经被删除');
+		}
+	}, renderErrorFn(res));
 });
 
 app.get('/search', function (req, res) {

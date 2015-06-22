@@ -1,0 +1,106 @@
+
+<script type="text/javascript">
+  $(function () {
+    function empty(str) {
+      return str == null || str == '';
+    }
+
+    $('#userForm').submit(function (event) {
+      var username = $('#inputUsername').val();
+      if (empty(username)) {
+		swal("填写提示", "用户名不能为空!", "warning");
+		$('#inputUsername').focus();
+        return false;
+      }
+      var realName = $('#inputRealName').val();
+      if (empty(realName)) {
+		swal("填写提示", "姓名不能为空!", "warning");
+		$('#inputRealName').focus();
+        return false;
+      }
+      var phone = $('#inputPhone').val();
+      if (empty(phone)) {
+		swal("填写提示", "手机不能为空!", "warning");
+		$('#inputPhone').focus();
+        return false;
+      }
+      var email = $('#inputEmail').val();
+      if (empty(email)) {
+		swal("填写提示", "邮箱不能为空!", "warning");
+		$('#inputEmail').focus();
+        return false;
+      }
+      return true;
+    });
+
+  });
+</script>
+
+<form id="userForm" action="/users/edit/<%= user.id %>" method="post">
+  <div class="form-group">
+    <label class="control-label" for="inputUsername">
+      用户名
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <input type="text" name="username" id="inputUsername" value="<%= user.username %>" class="form-control" placeholder="用户名" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputRealName">
+      姓名
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <input type="text" name="realName" id="inputRealName" value="<%= user.realName %>" class="form-control" placeholder="姓名" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputPhone">
+      手机
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <input type="text" name="phone" id="inputPhone" value="<%= user.phone %>" class="form-control" placeholder="手机" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputEmail">
+      邮箱
+      <b class="has-required bstooltip" title="必填" data-placement="top">Required</b>
+    </label>
+    <div class="controls">
+      <input type="text" name="email" id="inputEmail" value="<%= user.email %>" class="form-control" placeholder="邮箱" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputSchool">
+	  学校
+    </label>
+    <div class="controls">
+      <input type="text" name="school" id="inputSchool" value="<%= user.school %>" class="form-control" placeholder="学校" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputWork">
+      职业
+    </label>
+    <div class="controls">
+      <input type="text" name="work" id="inputWork" value="<%= user.work %>" class="form-control" placeholder="职业" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputCompany">
+      公司
+    </label>
+    <div class="controls">
+      <input type="text" name="company" id="inputCompany" value="<%= user.company %>" class="form-control" placeholder="公司" >
+    </div>
+  </div>
+  <div class="form-group">
+    <button type="submit" class="btn btn-primary">提交</button>
+    <a href="/users" class="btn btn-default">回到用户列表</a>
+  </div>
+
+</form>
+

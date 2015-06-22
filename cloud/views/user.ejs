@@ -1,4 +1,26 @@
 
+<script>
+
+function deleteUser(userid, realName) {
+	swal({
+		title: "确定删除？",
+		text: "用户(" + realName + ")删除后不能恢复，确定要删除？",
+		type: "warning",
+		showCancelButton: true,
+		cancelButtonText: "取消",
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "删除",
+		closeOnConfirm: false
+	}, function() {
+		$.post("/users/delete/"+userid, function(data) {
+			//swal("已删除!", "用户(" + realName + ")已删除.", "success"); 
+			location.reload();
+		});
+	});
+}
+
+</script>
+
 <div class="row">
   <div class="col-md-12">
     <h3>用户列表</h3>
@@ -21,7 +43,11 @@
         <td class="text-center text-bold"><%= user.ccnt %></td>
         <td class="text-center text-bold"><%= user.gcnt %></td>
         <td class="text-center text-bold"><%= user.pcnt %></td>
-        <td><a href="/contact/profile/<%= user.id %>" class="btn btn-primary btn-xs">个人主页</a></td>
+        <td width="200">
+		  <a href="/contact/profile/<%= user.id %>" class="btn btn-primary btn-xs">个人主页</a>
+		  <a href="/users/edit/<%= user.id %>" class="btn btn-primary btn-xs">编辑</a>
+		  <button class="btn btn-danger btn-xs" onclick="deleteUser('<%= user.id %>', '<%= user.realName %>')">删除</button>
+		</td>
       </tr>
       <% }); %>
       </tbody>
@@ -39,3 +65,4 @@
 	</form>
   </div>
 </div>
+
