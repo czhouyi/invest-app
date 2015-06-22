@@ -64,6 +64,7 @@
 	</ul>
 	<% if(cid==project.creatorId){ %>
 	<a href="/projects/edit/<%= project.id %>" class="btn btn-primary">编辑项目</a>
+	<!--<button class="btn btn-danger" onclick="deleteProject('<%= project.id %>', '<%= project.name %>')">删除项目</button>-->
 	<% } %>
 	<hr>
   </div>
@@ -105,3 +106,23 @@
 </div>
 <% }); %>
 
+<script>
+function deleteProject(projectId, projectName) {
+	swal({
+		title: "确定删除？",
+		text: "项目(" + projectName + ")删除后不能恢复，确定要删除？",
+		type: "warning",
+		showCancelButton: true,
+		cancelButtonText: "取消",
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "删除",
+		closeOnConfirm: false
+	}, function() {
+		$.post("/projects/delete/"+projectId, function(data) {
+			//swal("已删除!", "项目(" + projectName + ")已删除.", "success"); 
+			location.href="/projects";
+		});
+	});
+
+}
+</script>

@@ -493,9 +493,6 @@ app.post('/attach/delete', function (req, res) {
 	var pid = req.body.pid;
 	var aid = req.body.aid;
 
-	mlog.log(pid);
-	mlog.log(aid);
-	
 	var project = AV.Object.createWithoutData('Project', pid);
 	project.fetch().then(function (project) {
 		if (isProjectEmpty(project) == false) {
@@ -514,6 +511,39 @@ app.post('/attach/delete', function (req, res) {
 		}
 	}, renderErrorFn(res));
 });
+/*
+app.post('/projects/delete/:id', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var token = req.token;
+	var projectId = req.params.id;
+	var cid = req.cid;
+	var client = req.client;
+
+	var project = AV.Object.createWithoutData('Project', projectId);
+    var query = new AV.Query('Comment');
+    query.ascending('createdAt');
+    query.equalTo('project', project);
+    query.find().then(function (comments) {
+		AV.Object.destroyAll(comments);
+		project.fetch().then(function (project) {
+			if (isProjectEmpty(project) == false) {
+				var relation = project.relation("attachments");
+				relation.query().find().then(function(list){
+					AV.Object.destroyAll(list);
+					project.destroy().then(function(project){
+					
+					});
+				});
+				res.redirect("/projects/"+project.id);
+			} else {
+				renderError(res, '找不到该项目，该项目可能已经被删除');
+			}
+		}, renderErrorFn(res));
+	});
+});*/
 
 app.get('/projects/:id/comments', function (req, res) {
 	if (!login.isLogin(req)) {
@@ -956,14 +986,21 @@ app.post('/users/delete/:uid', function (req, res) {
 	var query = new AV.Query(AV.User);
 	var cid = req.cid;
 	
-    query.get(uid).then(function (user) {
-		if (user) {
-			user.destroy().then(function(user) {
+	AV.Query.doCloudQuery("select * from Comment where project in (select * from Project where creator=pointer('_User', ?))", [uid]).then(function(resultComment) {
+		AV.Object.destroyAll(resultComment.results);
+		AV.Query.doCloudQuery("select * from Project where creator=pointer('_User', ?)", [uid]).then(function(resultProject) {
+			AV.Object.destroyAll(resultProject.results);
+			query.get(uid).then(function (user) {
+				if (user) {
+					user.destroy().then(function(user){
 				
+					}, renderErrorFn(res));
+				} else {
+					renderError(res, '找不到用户，该用户可能已经被删除');
+				}
 			}, renderErrorFn(res));
-		} else {
-			renderError(res, '找不到用户，该用户可能已经被删除');
-		}
+
+		});
 	}, renderErrorFn(res));
 });
 
