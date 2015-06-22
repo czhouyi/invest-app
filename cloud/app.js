@@ -646,7 +646,7 @@ app.get('/contact', function (req, res) {
 						users = countUp(users, cps, mps);
 						// 参加项目查询
 						gcnt(users, users.length-1, function() {
-							res.render('user', {
+							res.render('contact', {
 								users: users, 
 								page: page,
 								pageCount: pageCount,
