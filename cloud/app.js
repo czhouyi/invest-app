@@ -1074,6 +1074,10 @@ app.get('/login', function (req, res) {
 	}
 });
 
+app.get('/download', function (req, res) {
+	res.render('download.ejs', {layout: false});
+});
+
 /*app.post('/register', function (req, res) {
 	var username = req.body.username;
 	var password = req.body.password;
