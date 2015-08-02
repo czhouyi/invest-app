@@ -42,11 +42,24 @@ var Attach = AV.Object.extend("Attach");
 var Follower = AV.Object.extend("_Follower");
 var limit = 10;
 var type2showMap = {
-	'O2O': 'O2O',
-	'EDUCATION': '教育',
-	'EXTRA': '其他',
 	'EBUSINESS': '电商',
-	'SOCIAL': '社交'
+	'SERVICE': '企业服务',
+	'ENTERTAINMENT': '文化体育娱乐',
+	'O2O': 'O2O',
+	'FINANCIAL': '金融',
+	'SOCIAL': '社交网络',
+	'GAME': '游戏',
+	'EDUCATION': '教育',
+	'TOOL': '工具软件',
+	'HARDWARE': '智能硬件',
+	'TRAVEL': '旅游',
+	'CAR': '汽车&交通',
+	'HEALTH': '医疗健康',
+	'MEDIA': '媒体',
+	'ESTATE': '房产服务',
+	'FOOD': '餐饮',
+	'BIGDATA': '大数据',
+	'EXTRA': '其他'
 };
 
 var status2showMap = {
@@ -71,7 +84,7 @@ function formatTime(t) {
 }
 
 function formatTimeLong(t) {
-	var date = moment(t).format('YYYY-MM-DD HH:mm:ss');
+	var date = moment(t).format('YYYY-MM-DD');
 	return date;
 }
 
@@ -147,7 +160,7 @@ function transformSearchProject(t) {
         project_id: t.id,
         name: t.name,
         type: type2showMap[t.type],
-        createdAt: moment(t.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+        createdAt: moment(t.createdAt).format('YYYY-MM-DD'),
         createdAtUnix: moment(t.createdAt).valueOf()
     };
 }
@@ -158,12 +171,12 @@ function transformComment(t) {
     return {
         id: t.id,
         content: nnStr(t.get('content')),
-        fromuser: fromuser ? fromuser.get('username') : '',
+        fromuser: fromuser ? fromuser.get('realName') : '',
 		fromid: fromuser ? fromuser.id : '',
-		touser: touser ? touser.get('username') : '',
+		touser: touser ? touser.get('realName') : '',
 		toid: touser ? touser.id : '',
         createdAt: moment(t.createdAt).fromNow(),
-        createdAtLong: moment(t.createdAt).format('YYYY-MM-DD HH:mm:ss')
+        createdAtLong: moment(t.createdAt).format('YYYY-MM-DD')
     };
 }
 
@@ -511,7 +524,7 @@ app.post('/attach/delete', function (req, res) {
 		}
 	}, renderErrorFn(res));
 });
-/*
+
 app.post('/projects/delete/:id', function (req, res) {
 	if (!login.isLogin(req)) {
 		res.redirect('/login');
@@ -534,7 +547,7 @@ app.post('/projects/delete/:id', function (req, res) {
 				relation.query().find().then(function(list){
 					AV.Object.destroyAll(list);
 					project.destroy().then(function(project){
-					
+						res.redirect('/projects');		
 					});
 				});
 				res.redirect("/projects/"+project.id);
@@ -543,7 +556,7 @@ app.post('/projects/delete/:id', function (req, res) {
 			}
 		}, renderErrorFn(res));
 	});
-});*/
+});
 
 app.get('/projects/:id/comments', function (req, res) {
 	if (!login.isLogin(req)) {

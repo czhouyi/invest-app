@@ -45,7 +45,7 @@
       <ul class="nav navbar-nav">
         <li id="site_nav_projects"><a href="/projects">项目</a></li>
         <li id="site_nav_contact"><a href="/contact">通讯录</a></li>
-		<li id="site_nav_users"><a href="/users">所有用户</a></li>
+		<%if(isAdmin){%><li id="site_nav_users"><a href="/users">所有用户</a></li><%}%>
       </ul>
 
       <%if(isLogin){%>
