@@ -127,7 +127,7 @@ function deleteProject(projectId, projectName) {
 		closeOnConfirm: false
 	}, function() {
 		$.post("/projects/delete/"+projectId, function(data) {
-			swal("已删除!", "项目(" + projectName + ")已删除.", "success"); 
+			//swal("已删除!", "项目(" + projectName + ")已删除.", "success"); 
 			location.href="/projects";
 		});
 	});

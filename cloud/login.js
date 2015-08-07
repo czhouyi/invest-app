@@ -74,7 +74,7 @@ exports.clientTokenParser = function () {
         req.cid = cid;
         req.client = client;
         mlog.log('find cid=' + req.cid);
-		req.admin = client.username =='kcainvest';
+		req.admin = client.username == 'kcainvest';
 		next();
         /*isAdmin(cid).then(function (isAdmin) {
           req.admin = isAdmin;

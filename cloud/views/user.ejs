@@ -28,9 +28,8 @@ function deleteUser(userid, realName) {
       <thead>
       <tr>
         <th data-sort="string">姓名</th>
-        <th data-sort="string" class="text-center">发起项目</th>
-        <th data-sort="string" class="text-center">参与项目</th>
-        <th data-sort="string" class="text-center">完成项目</th>
+        <th data-sort="string" class="text-center"></th>
+        <th data-sort="string" class="text-center"></th>
         <th></th>
       </tr>
       </thead>
@@ -40,9 +39,8 @@ function deleteUser(userid, realName) {
         <td>
           <%= user.realName %>
         </td>
-        <td class="text-center text-bold"><%= user.ccnt %></td>
-        <td class="text-center text-bold"><%= user.gcnt %></td>
-        <td class="text-center text-bold"><%= user.pcnt %></td>
+        <td class="text-center">发起<%= user.ccnt %>个项目</td>
+        <td class="text-center">参与<%= user.gcnt %>个项目</td>
         <td width="200">
 		  <a href="/contact/profile/<%= user.id %>" class="btn btn-primary btn-xs">个人主页</a>
 		  <a href="/users/edit/<%= user.id %>" class="btn btn-primary btn-xs">编辑</a>
