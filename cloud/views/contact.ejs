@@ -6,10 +6,8 @@
       <thead>
       <tr>
         <th data-sort="string">姓名</th>
-        <th data-sort="string" class="text-center">发起项目</th>
-        <th data-sort="string" class="text-center">参与项目</th>
-        <th data-sort="string" class="text-center">完成项目</th>
-        <th data-sort="string" class="text-center">邀请我参与项目</th>
+        <th class="text-center"></th>
+        <th class="text-center"></th>
         <th></th>
       </tr>
       </thead>
@@ -19,25 +17,12 @@
         <td>
           <%= user.realName %>
         </td>
-        <td class="text-center text-bold"><%= user.ccnt %></td>
-        <td class="text-center text-bold"><%= user.gcnt %></td>
-        <td class="text-center text-bold"><%= user.pcnt %></td>
-        <td class="text-center text-bold"><%= user.mcnt %></td>
+        <td class="text-center">发起<%= user.ccnt %>个项目</td>
+        <td class="text-center">参与<%= user.gcnt %>个项目</td>
         <td><a href="/contact/profile/<%= user.id %>" class="btn btn-primary btn-xs">个人主页</a></td>
       </tr>
       <% }); %>
       </tbody>
     </table>
-	<form action="/contact" class="form-inline" method="get">
-		<div class="form-group" >
-			<a href="/contact?page=<%= page-1 %>" class="btn btn-default" <% if(page == 1) {%>disabled<%}%>>上一页</a>
-			<span><%= page %>/<%= pageCount%></span>
-			<a href="/contact?page=<%= page+1 %>" class="btn btn-default" <% if(page == pageCount) {%>disabled<%}%>>下一页</a>
-		</div>
-		<div class="form-group" >
-			<input id="inputPage" type="text" class="form-control" name="page" size="3">
-		</div>
-		<button type="submit" class="btn btn-default">跳转</button>
-	</form>
   </div>
 </div>

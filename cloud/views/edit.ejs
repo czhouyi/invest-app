@@ -59,10 +59,23 @@
     </label>
     <div class="controls">
     <select id="inputType" class="form-control" name="type" required>
-      <option value="SOCIAL" <% if(project.rawType=='SOCIAL'){ %>selected="selected"<% } %>>社交</option>
+	  <option value="EBUSINESS" <% if(project.rawType=='EBUSINESS'){ %>selected="selected"<% } %>>电商</option>
+      <option value="SERVICE" <% if(project.rawType=='SERVICE'){ %>selected="selected"<% } %>>企业服务</option>
+      <option value="ENTERTAINMENT" <% if(project.rawType=='ENTERTAINMENT'){ %>selected="selected"<% } %>>文化体育娱乐</option>
       <option value="O2O" <% if(project.rawType=='O2O'){ %>selected="selected"<% } %>>O2O</option>
-      <option value="EBUSINESS" <% if(project.rawType=='EBUSINESS'){ %>selected="selected"<% } %>>电商</option>
+      <option value="FINANCIAL" <% if(project.rawType=='FINANCIAL'){ %>selected="selected"<% } %>>金融</option>
+      <option value="SOCIAL" <% if(project.rawType=='SOCIAL'){ %>selected="selected"<% } %>>社交网络</option>
       <option value="GAME" <% if(project.rawType=='GAME'){ %>selected="selected"<% } %>>游戏</option>
+      <option value="EDUCATION" <% if(project.rawType=='EDUCATION'){ %>selected="selected"<% } %>>教育</option>
+      <option value="TOOL" <% if(project.rawType=='TOOL'){ %>selected="selected"<% } %>>工具软件</option>
+      <option value="HARDWARE" <% if(project.rawType=='HARDWARE'){ %>selected="selected"<% } %>>智能硬件</option>
+      <option value="TRAVEL" <% if(project.rawType=='TRAVEL'){ %>selected="selected"<% } %>>旅游</option>
+      <option value="CAR" <% if(project.rawType=='CAR'){ %>selected="selected"<% } %>>汽车&交通</option>
+      <option value="HEALTH" <% if(project.rawType=='HEALTH'){ %>selected="selected"<% } %>>医疗健康</option>
+      <option value="MEDIA" <% if(project.rawType=='MEDIA'){ %>selected="selected"<% } %>>媒体</option>
+      <option value="ESTATE" <% if(project.rawType=='ESTATE'){ %>selected="selected"<% } %>>房产服务</option>
+      <option value="FOOD" <% if(project.rawType=='FOOD'){ %>selected="selected"<% } %>>餐饮</option>
+      <option value="BIGDATA" <% if(project.rawType=='BIGDATA'){ %>selected="selected"<% } %>>大数据</option>
       <option value="EXTRA" <% if(project.rawType=='EXTRA'){ %>selected="selected"<% } %>>其他</option>
     </select>
     </div>
@@ -104,6 +117,14 @@
     </label>
     <div class="controls">
       <input type="text" name="contact_way" id="inputContact" value="<%= project.contact_way %>" class="form-control" placeholder="联系方式" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputContact">
+      项目精调
+    </label>
+    <div class="controls">
+      <input type="text" name="jintiao" id="inputJintiao" value="<%= project.jintiao %>" class="form-control" placeholder="项目精调" >
     </div>
   </div>
 

@@ -40,6 +40,7 @@ app.use(app.router);
 var Project = AV.Object.extend('Project');
 var Attach = AV.Object.extend("Attach");
 var Follower = AV.Object.extend("_Follower");
+var Followee = AV.Object.extend("_Followee");
 var limit = 10;
 var type2showMap = {
 	'EBUSINESS': '电商',
@@ -104,9 +105,7 @@ function transformUser(t) {
 		realName: nnStr(t.get('realName')),
 		company: nnStr(t.get('company')),
 		ccnt: 0,
-		pcnt: 0,
-		gcnt: 0,
-		mcnt: 0
+		gcnt: 0
 	};
 }
 
@@ -122,21 +121,24 @@ function transformProject(t) {
 		status = '未知';
 	}
 
-	var rating_int = parseInt(t.get('rating'));
-	if (!rating_int || rating_int < 0) {
-		rating_int = 0;
-	}
 	var star = "";
-	for (var i = 0; i < rating_int; i++) {
-		star += '<span class="glyphicon glyphicon-star"></span>';
-	}
-	for (var i = 0; i < 5-rating_int; i++) {
-		star += '<span class="glyphicon glyphicon-star-empty"></span>';
+	var rating = t.get('rating');
+	if (rating==null) {
+		star = "判断保留";
+	} else {
+		var rating_int = parseInt(rating);
+		for (var i = 0; i < rating_int; i++) {
+			star += '<span class="glyphicon glyphicon-star"></span>';
+		}
+		for (var i = 0; i < 5-rating_int; i++) {
+			star += '<span class="glyphicon glyphicon-star-empty"></span>';
+		}
 	}
 	return {
 		id: t.id,
 		name: nnStr(t.get('name')),
 		introdution: nnStr(t.get('introdution')),
+		jintiao: nnStr(t.get('jintiao')),
 		type: type,
 		rawType: rawType,
 		creatorId: t.get('creator').id,
@@ -239,7 +241,12 @@ app.get('/projects', function (req, res) {
 		query.equalTo('status', status);
 	}
 	if (rating) {
-		query.equalTo('rating', parseInt(rating));
+		var rat = parseInt(rating);
+		if (rat == -1) {
+			query.equalTo('rating', null);
+		} else {
+			query.equalTo('rating', rat);
+		}
 	}
 	query.count({
 		success: function(count) {
@@ -291,14 +298,21 @@ app.get('/projects/follow', function (req, res) {
 	query.ascending('status');
 	query.descending('createdAt');
 	query.equalTo('group', AV.User.current());
+	query.notEqualTo('creator', AV.User.current());
 	if (type) {
 		query.equalTo('type', type);
 	}
 	if (status) {
 		query.equalTo('status', status);
 	}
+	
 	if (rating) {
-		query.equalTo('rating', parseInt(rating));
+		var rat = parseInt(rating);
+		if (rat == -1) {
+			query.equalTo('rating', null);
+		} else {
+			query.equalTo('rating', rat);
+		}
 	}
 	query.count({
 		success: function(count) {
@@ -339,7 +353,7 @@ app.post('/projects', function (req, res) {
 	mlog.log('req name : ' + req.body.name);
 	var attachmentFile = req.files.attachment;
 	createProject(res, client, attachmentFile, req.body.name, req.body.introdution, req.body.type,
-		req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, function (project) {
+		req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, req.body.jintiao, function (project) {
 		res.redirect('/projects');
 	});
 });
@@ -356,7 +370,7 @@ function saveAttach(attachmentFile, f) {
 	});
 }
 
-function createProject(res, client, attachmentFile, name, introdution, type, status, rating, invest_money, contact_way, then) {
+function createProject(res, client, attachmentFile, name, introdution, type, status, rating, invest_money, contact_way, jintiao, then) {
 	var project = new AV.Object('Project');
 
 	project.set('creator', AV.User.current());
@@ -367,6 +381,7 @@ function createProject(res, client, attachmentFile, name, introdution, type, sta
 	project.set('rating', parseInt(rating));
 	project.set('invest_money', invest_money);
 	project.set('contact_way', contact_way);
+	project.set('jintiao', jintiao);
 	project.set('create_time', new Date());
 
 	project.save().then(function (project) {
@@ -580,19 +595,21 @@ app.get('/projects/:id/comments', function (req, res) {
 			if (projects && projects.length > 0) {
 				var project = projects[0];
 				var relation = project.relation("attachments");
-                project = transformProject(project);
                 comments = _.map(comments, transformComment);
-				relation.query().find({
-					success: function(attachs){
+				relation.query().find().then(function(attachs){
+					var grouprelation = project.relation("group");
+					grouprelation.query().find().then(function(groups){
+						project = transformProject(project);
 						res.render('item', { 
 							project: project, 
 							isAdmin: isAdmin,
 							token: token, 
 							comments: comments,
 							cid: cid,
-							attachs: attachs
+							attachs: attachs,
+							groups: groups
 						});
-					}
+					});
 				});
             } else {
                 renderError(res, '找不到项目，该项目可能已经被删除');
@@ -660,44 +677,41 @@ app.get('/contact', function (req, res) {
 
 	var query = new AV.Query(Follower);
 	query.equalTo("user", AV.User.current());
-	query.count().then(function(count){
-		var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
-		if (page > pageCount) {
-			page = pageCount;
-		}
-		var skip = (page - 1) * limit;
-		query.limit(limit);
-		query.skip(skip);
-
-		query.find().then(function(results) {
+	query.ascending("createdAt");
+	query.find().then(function(followers){
+		
+		var query1 = new AV.Query(Followee);
+		query1.equalTo("user", AV.User.current());
+		query1.ascending("createdAt");
+		query1.find().then(function(followees) {
 			var userIds = [];
-			for (var i = 0, len = results.length; i < len; i++) {
-				userIds[i] = results[i].get('follower').id;
+			for (var i = 0, len = followers.length; i < len; i++) {
+				userIds[i] = followers[i].get('follower').id;
+			}
+			for (var i = 0, len = followees.length; i < len; i++) {
+				userIds[i+followers.length] = followees[i].get('followee').id;
 			}
 
 			var q = new AV.Query(AV.User);
 			q.containedIn("objectId", userIds);
 			q.find().then(function(users) {
-				var subf = " in (select follower from _Follower where user=pointer('_User', ?)) ";
+				var includeIds = "'"+userIds.join("','")+"'";
 				// 好友发起项目查询
-				AV.Query.doCloudQuery("select * from Project where creator " + subf, [cid]).then(function(result){
+				var sql = "select * from Project where creator in (select * from _User where objectId in ("+includeIds+"))";
+				AV.Query.doCloudQuery(sql).then(function(result){
 					var cps = result.results;
-					// 好友邀请我参与项目查询
-					AV.Query.doCloudQuery("select * from Project where group in (select * from _User where objectId=?) and creator " + subf, [cid, cid]).then(function(result){
-						var mps = result.results;
-						users = _.map(users, transformUser);
-						users = countUp(users, cps, mps);
-						// 参加项目查询
-						gcnt(users, users.length-1, function() {
-							res.render('contact', {
-								users: users, 
-								page: page,
-								pageCount: pageCount,
-								isAdmin: isAdmin,
-								client: client
-							});
+					
+					users = _.map(users, transformUser);
+					users = countUp(users, cps);
+					// 好友参与项目查询
+					gcnt(users, users.length-1, function() {
+						res.render('contact', {
+							users: users, 
+							page: page,
+							isAdmin: isAdmin,
+							client: client
 						});
-					},mutil.renderErrorFn(res));
+					});
 				}, mutil.renderErrorFn(res));
 			}, mutil.renderErrorFn(res));
 		}, mutil.renderErrorFn(res));
@@ -746,7 +760,7 @@ app.get('/users', function (req, res) {
 				createq.matchesQuery("creator", query);
 				createq.find().then(function(cps){
 					users = _.map(users, transformUser);
-					users = countUp1(users, cps);
+					users = countUp(users, cps);
 					// 参加项目查询
 					gcnt(users, users.length-1, function() {
 						res.render('user', {
@@ -763,7 +777,7 @@ app.get('/users', function (req, res) {
 	});
 });
 
-function countUp(users, cps, mps) {
+function countUp(users, cps) {
 	if(cps){
 		for (var i = 0, li = cps.length; i < li; i++) {
 			var cp = cps[i];
@@ -771,39 +785,6 @@ function countUp(users, cps, mps) {
 				var user = users[j];
 				if (user.id == cp.get('creator').id) {
 					user.ccnt++;
-					if (cp.get('status')=='COMPLETE') {
-						user.pcnt++;
-					}
-				}
-			}
-		}
-	}
-	if(mps){
-		for (var i = 0, li = mps.length; i < li; i++) {
-			var mp = mps[i];
-			for (var j = 0, lj = users.length; j < lj; j++) {
-				var user = users[j];
-				if (user.id == mp.get('creator').id) {
-					user.mcnt++;
-				}
-			}
-		}
-	}
-
-	return users;
-}
-
-function countUp1(users, cps) {
-	if(cps){
-		for (var i = 0, li = cps.length; i < li; i++) {
-			var cp = cps[i];
-			for (var j = 0, lj = users.length; j < lj; j++) {
-				var user = users[j];
-				if (user.id == cp.get('creator').id) {
-					user.ccnt++;
-					if (cp.get('status')=='COMPLETE') {
-						user.pcnt++;
-					}
 				}
 			}
 		}
@@ -1051,21 +1032,38 @@ app.get('/search', function (req, res) {
         success: function (httpResponse) {
             var resText = httpResponse.text;
 			var projectJson = JSON.parse(resText);
+			var sid = projectJson.sid;
+	        allprojects = projectJson.results || [];
             //mlog.log(projectJson);
-            var sid = projectJson.sid;
-            projects = projectJson.results || [];
-            projects = projects.splice(skip);
-            projects = _.map(projects, transformSearchProject);
-			//renderError(res, tickets);
-            var prevPage, nextPage;
-            if (page > 1) {
-                prevPage = page - 1;
-            } else {
-                prevPage = 1;
-            }
-            nextPage = page + 1;
-            res.render('search', {isAdmin: isAdmin, projects: projects, content:content, searchPage:true,
-				page: page, prevPage: prevPage, nextPage: nextPage});
+			var user = AV.User.current();
+			var sql = "select * from Project where creator in (select * from _User where objectId=?) or group in (select * from _User where objectId=?)";
+			AV.Query.doCloudQuery(sql, [user.id, user.id]).then(function(result){
+				var scope = result.results;
+				var pid = [];
+				for (var i = 0; i< scope.length; i++) {
+					pid[i] = scope[i].id;
+				}
+				
+				var projects = [];
+				for (var i = 0, j = 0; i< allprojects.length; i++) {
+					if (pid.indexOf(allprojects[i].objectId) != -1) {
+						projects[j] = allprojects[i];
+						j++;
+					}
+				}
+		        projects = projects.splice(skip);
+			    projects = _.map(projects, transformSearchProject);
+		        var prevPage, nextPage;
+			    if (page > 1) {
+				    prevPage = page - 1;
+				} else {
+					prevPage = 1;
+	            }
+		        nextPage = page + 1;
+			    res.render('search', {isAdmin: isAdmin, projects: projects, content:content, searchPage:true,
+					page: page, prevPage: prevPage, nextPage: nextPage});
+			}, mutil.renderErrorFn(res));
+
         },
         error: function (httpResponse) {
             renderError(res, 'Search error.' + httpResponse);

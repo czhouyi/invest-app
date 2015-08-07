@@ -24,7 +24,7 @@
 	<ul class="list-group">
 		<li class="list-group-item">
 			<span style="display:inline"><%= project.creator %> 发起的项目</span>
-			<span class="bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAt %></span>
+			<span class="bstooltip" title="<%= project.createdAtLong %>">@ <%= project.createdAtLong %></span>
 		</li>
 		<li class="list-group-item">
 			<h2 style="display: inline"><%= project.name %><br><small><%= project.introdution %></small></h2>
@@ -53,13 +53,21 @@
 			<span>项目阶段</span><span class="right"><%= project.status %></span>
 		</li>
 		<li class="list-group-item">
-			<span>项目来源</span><span class="right"><%= project.creator %></span>
+			<span>项目成员</span>
+			<span class="right">
+				<% groups.forEach (function(group, index){ %>
+					<a href="/contact/profile/<%= group.id %>" class="btn btn-default btn-xs right"><%= group.get('realName') %></a>
+				<% }); %>
+			</span>
 		</li>
 		<li class="list-group-item">
 			<span>投资回报</span><span class="right"></span>
 		</li>
 		<li class="list-group-item">
 			<span>联系方式</span><span class="right"><%= project.contact_way %></span>
+		</li>
+		<li class="list-group-item">
+			<span>项目精调</span><span class="right"><%= project.jintiao %></span>
 		</li>
 	</ul>
 	<% if(cid==project.creatorId){ %>

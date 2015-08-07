@@ -40,6 +40,7 @@ function findClient(req, res, f) {
   }
 }
 
+/*
 function isAdmin(cid) {
   var p = new AV.Promise();
   var user = AV.Object.createWithoutData('_User', cid);
@@ -54,6 +55,7 @@ function isAdmin(cid) {
   }, mutil.rejectFn(p));
   return p;
 }
+*/
 
 exports.clientTokenParser = function () {
   return function (req, res, next) {
@@ -102,6 +104,13 @@ exports.clientTokenParser = function () {
 
 function isLogin() {
   return AV.User.current();
+}
+function isAdmin() {
+  var cu = AV.User.current();
+  if (cu) {
+    return cu.username=='kcainvest';
+  }
+  return false;
 }
 
 exports.findClient = findClient;
