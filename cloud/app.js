@@ -830,8 +830,8 @@ app.get('/contact/me', function (req, res) {
 				var crs = _.map(combinProjects(cpresult.results, cperesult.results, cid), transformProject);
 				user.ccnt = cpresult.count; // 发起项目数量
 
-				AV.Query.doCloudQuery("select count(*), * from Project where creator!=pointer('_User', ?) and group in (select * from _User where objectId=?)", [cid]).then(function(gpresult){
-					AV.Query.doCloudQuery("select * from ProjectEval where project in (select * from Project where creator!=pointer('_User', ?) and group in (select * from _User where objectId=?))", [cid]).then(function(gperesult){
+				AV.Query.doCloudQuery("select count(*), * from Project where group in (select * from _User where objectId=?)", [cid]).then(function(gpresult){
+					AV.Query.doCloudQuery("select * from ProjectEval where project in (select * from Project where group in (select * from _User where objectId=?))", [cid]).then(function(gperesult){
 						var grs = _.map(combinProjects(gpresult.results, gperesult.results, cid), transformProject);
 						user.gcnt = gpresult.count; // 参与项目数量
 
