@@ -64,10 +64,10 @@ var type2showMap = {
 };
 
 var status2showMap = {
-	'FINANCING': '融资中',
+	'FINANCING': '融资开放',
 	'COMPLETE': '融资完成',
-	'FOLLOWING': '跟踪',
-	'ABUNDANT': '终止'
+	'FOLLOWING': '后续跟踪',
+	'ABUNDANT': '放弃中止'
 };
 var renderError = mutil.renderError;
 var renderErrorFn = mutil.renderErrorFn;
@@ -229,7 +229,7 @@ app.get('/projects', function (req, res) {
 	if (page < 1) {
 		page = 1;
 	}
-
+	var cid = AV.User.current().id;
 	var query = new AV.Query('Project');
 	query.ascending('status');
 	query.descending('createdAt');
@@ -260,16 +260,21 @@ app.get('/projects', function (req, res) {
 			
 			query.find().then(function(projects) {
 				projects = projects || [];
-				projects = _.map(projects, transformProject);
-				res.render('list', {
-					projects: projects,
-					page: page,
-					pageCount: pageCount,
-					type: type,
-					status: status,
-					rating: rating,
-					isAdmin: isAdmin,
-					token: token
+				var pequery = new AV.Query('ProjectEval');
+				pequery.matchesQuery("project", query);
+				pequery.find().then(function(pes) {
+					projects = combinProjects(projects, pes, cid);
+					projects = _.map(projects, transformProject);
+					res.render('list', {
+						projects: projects,
+						page: page,
+						pageCount: pageCount,
+						type: type,
+						status: status,
+						rating: rating,
+						isAdmin: isAdmin,
+						token: token
+					});
 				});
 			}, mutil.renderErrorFn(res));
 		}
@@ -293,12 +298,13 @@ app.get('/projects/follow', function (req, res) {
 	if (page < 1) {
 		page = 1;
 	}
-	
+	var cuser = AV.User.current();
+	var cid = cuser.id;
 	var query = new AV.Query('Project');
 	query.ascending('status');
 	query.descending('createdAt');
-	query.equalTo('group', AV.User.current());
-	query.notEqualTo('creator', AV.User.current());
+	query.equalTo('group', cuser);
+	query.notEqualTo('creator', cuser);
 	if (type) {
 		query.equalTo('type', type);
 	}
@@ -314,18 +320,21 @@ app.get('/projects/follow', function (req, res) {
 			query.equalTo('rating', rat);
 		}
 	}
-	query.count({
-		success: function(count) {
-			var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
-			if (page > pageCount) {
-				page = pageCount;
-			}
-			var skip = (page - 1) * limit;
-			query.limit(limit);
-			query.skip(skip);
+	query.count().then(function(count) {
+		var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+		if (page > pageCount) {
+			page = pageCount;
+		}
+		var skip = (page - 1) * limit;
+		query.limit(limit);
+		query.skip(skip);
 			
-			query.find().then(function(projects) {
-				projects = projects || [];
+		query.find().then(function(projects) {
+			projects = projects || [];
+			var pequery = new AV.Query('ProjectEval');
+			pequery.matchesQuery("project", query);
+			pequery.find().then(function(pes) {
+				projects = combinProjects(projects, pes, cid);
 				projects = _.map(projects, transformProject);
 				res.render('follow', {
 					projects: projects,
@@ -338,7 +347,7 @@ app.get('/projects/follow', function (req, res) {
 					token: token
 				});
 			}, mutil.renderErrorFn(res));
-		}
+		});
 	});
 });
 
@@ -814,34 +823,38 @@ app.get('/contact/me', function (req, res) {
 	var client = req.client;
 	var query = new AV.Query(AV.User);
 	var cid = req.cid;
-	query.get(cid, {
-		success : function(user) {
-			user = transformUser(user);
-			AV.Query.doCloudQuery("select count(*), * from Project where creator=pointer('_User', ?)", [cid], {
-				success: function(result){
-					var crs = _.map(result.results, transformProject);
-					user.ccnt = result.count; // 发起项目数量
+	query.get(cid).then(function(user) {
+		user = transformUser(user);
+		AV.Query.doCloudQuery("select count(*), * from Project where creator=pointer('_User', ?)", [cid]).then(function(cpresult){
+			AV.Query.doCloudQuery("select * from ProjectEval where project in (select * from Project where creator=pointer('_User', ?))", [cid, cid]).then(function(cperesult){
+				var crs = _.map(combinProjects(cpresult.results, cperesult.results, cid), transformProject);
+				user.ccnt = cpresult.count; // 发起项目数量
 
-					for (var i = 0; i < user.ccnt; i++) {
-						var p = crs[i];
-						if (p.rawStatus == "COMPLETE") {
-							user.pcnt++; // 完成融资项目数量
-						}
-					}
+				AV.Query.doCloudQuery("select count(*), * from Project where creator!=pointer('_User', ?) and group in (select * from _User where objectId=?)", [cid]).then(function(gpresult){
+					AV.Query.doCloudQuery("select * from ProjectEval where project in (select * from Project where creator!=pointer('_User', ?) and group in (select * from _User where objectId=?))", [cid]).then(function(gperesult){
+						var grs = _.map(combinProjects(gpresult.results, gperesult.results, cid), transformProject);
+						user.gcnt = gpresult.count; // 参与项目数量
 
-					AV.Query.doCloudQuery("select count(*), * from Project where group in (select * from _User where objectId=?)", [cid], {
-						success: function(result){
-							var grs = _.map(result.results, transformProject);
-							user.gcnt = result.count; // 参与项目数量
-
-							res.render('me', {user: user, crs: crs, grs: grs, isAdmin: isAdmin});
-						}
+						res.render('me', {user: user, crs: crs, grs: grs, isAdmin: isAdmin});
 					});
-				}
+				});
 			});
-		}
+		});
 	});
 });
+
+function combinProjects(ps, pes, cid) {
+	for (var i = 0; i < ps.length; i++) {
+		ps[i].set('status', 'FINANCING');
+		for (var j = 0; j < pes.length; j++) {
+			if (ps[i].id==pes[j].get('project').id && pes[j].get('user').id==cid) {
+				ps[i].set('status', pes[j].get('status'));
+				ps[i].set('rating', pes[j].get('rating'));
+			}
+		}
+	}
+	return ps;
+}
 
 app.get('/contact/profile/:uid', function (req, res) {
 	if (!login.isLogin(req)) {

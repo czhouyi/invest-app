@@ -87,10 +87,10 @@
     </label>
     <div class="controls">
     <select id="inputStatus" class="form-control" name="status" required>
-      <option value="FINANCING" <% if(project.rawStatus=='FINANCING'){ %>selected="selected"<% } %>>融资中</option>
-      <option value="FOLLOWING" <% if(project.rawStatus=='FOLLOWING'){ %>selected="selected"<% } %>>跟踪</option>
-      <option value="COMPLETE" <% if(project.rawStatus=='COMPLETE'){ %>selected="selected"<% } %>>已完成</option>
-      <option value="ABUNDANT" <% if(project.rawStatus=='ABUNDANT'){ %>selected="selected"<% } %>>已终止</option>
+      <option value="FINANCING" <% if(project.rawStatus=='FINANCING'){ %>selected="selected"<% } %>>融资开放</option>
+      <option value="COMPLETE" <% if(project.rawStatus=='COMPLETE'){ %>selected="selected"<% } %>>融资完成</option>
+      <option value="FOLLOWING" <% if(project.rawStatus=='FOLLOWING'){ %>selected="selected"<% } %>>后续跟踪</option>
+      <option value="ABUNDANT" <% if(project.rawStatus=='ABUNDANT'){ %>selected="selected"<% } %>>放弃中止</option>
     </select>
     </div>
   </div>
