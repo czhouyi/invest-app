@@ -67,7 +67,7 @@ var status2showMap = {
 	'FINANCING': '融资开放',
 	'COMPLETE': '融资完成',
 	'FOLLOWING': '后续跟踪',
-	'ABUNDANT': '放弃中止'
+	'DISCARD': '放弃中止'
 };
 var renderError = mutil.renderError;
 var renderErrorFn = mutil.renderErrorFn;
@@ -149,10 +149,28 @@ function transformProject(t) {
 		star: star,
 		invest_money: nnStr(t.get('invest_money')),
 		contact_way: nnStr(t.get('contact_way')),
+		invest: nnStr(t.get('invest')),
+		invest_eval: nnStr(t.get('invest_eval')),
+		final_eval: nnStr(t.get('final_eval')),
 		createdAt: formatTime(t.createdAt),
 		createdAtLong: formatTimeLong(t.createdAt),
 		createdAtUnix: moment(t.createdAt).valueOf()
 	};
+}
+
+function evalProject(project, projectEval) {
+	if (projectEval) {
+		project.set('status', projectEval.get('status'));
+		project.set('rating', projectEval.get('rating'));
+		project.set('jintiao', projectEval.get('jintiao'));
+		project.set('contact_way', projectEval.get('contact'));
+		project.set('invest', projectEval.get('invest'));
+		project.set('invest_eval', projectEval.get('invest_eval'));
+		project.set('final_eval', projectEval.get('final_eval'));
+	} else {
+		project.set('status', 'FINANCING');
+	}
+	return project;
 }
 
 function transformSearchProject(t) {
@@ -394,26 +412,34 @@ function createProject(res, client, attachmentFile, name, introdution, type, sta
 	project.set('create_time', new Date());
 
 	project.save().then(function (project) {
-		if (typeof(attachmentFile.path) == "string") {
-			saveAttach(attachmentFile, function(attach) {
-				var relation = project.relation("attachments");
-				relation.add(attach);
-				project.save();
-			});
-		} else {
-			for (var i = 0, len = attachmentFile.length; i < len; i++) {
-				saveAttach(attachmentFile[i], function(attach){
+		var projectEval = new AV.Object('ProjectEval');
+
+		projectEval.set('status', status);
+		projectEval.set('contact', contact_way);
+		projectEval.set('rating', parseInt(rating));
+		projectEval.set('jintiao', jintiao);
+		projectEval.save().then(function(projectEval) {
+			if (typeof(attachmentFile.path) == "string") {
+				saveAttach(attachmentFile, function(attach) {
 					var relation = project.relation("attachments");
 					relation.add(attach);
 					project.save();
 				});
+			} else {
+				for (var i = 0, len = attachmentFile.length; i < len; i++) {
+					saveAttach(attachmentFile[i], function(attach){
+						var relation = project.relation("attachments");
+						relation.add(attach);
+						project.save();
+					});
+				}
 			}
-		}
-		then();
+			then();
+		});
 	}, renderErrorFn(res));
 }
 
-function updateProject(res, project, attachmentFile, name, introdution, type, status, rating, invest_money, contact_way, then) {
+function updateProject(res, project, attachmentFile, name, introdution, type, status, rating, invest_money, contact_way, jintiao, then) {
 	//project.set('creator', AV.User.current());
 	project.set('name', name);
 	project.set('introdution', introdution);
@@ -425,22 +451,41 @@ function updateProject(res, project, attachmentFile, name, introdution, type, st
 	//project.set('create_time', new Date());
 
 	project.save().then(function (project) {
-		if (typeof(attachmentFile.path) == "string") {
-			saveAttach(attachmentFile, function(attach) {
-				var relation = project.relation("attachments");
-				relation.add(attach);
-				project.save();
-			});
-		} else {
-			for (var i = 0, len = attachmentFile.length; i < len; i++) {
-				saveAttach(attachmentFile[i], function(attach){
-					var relation = project.relation("attachments");
-					relation.add(attach);
-					project.save();
-				});
+		var peq = new AV.Query('ProjectEval');
+		peq.equalTo('project', AV.Object.createWithoutData('Project', project.id));
+		peq.equalTo('user', AV.User.current());
+		peq.find().then(function (projectEvals) {
+			var projectEval;
+			if (projectEvals && projectEvals.length > 0) {
+				mlog.log('notnull');
+				projectEval = projectEvals[0];
+			} else {
+				mlog.log('null');
+				projectEval = new AV.Object('ProjectEval');
 			}
-		}
-		then();
+			projectEval.set('status', status);
+			projectEval.set('contact', contact_way);
+			projectEval.set('rating', parseInt(rating));
+			projectEval.set('jintiao', jintiao);
+			projectEval.save().then(function(projectEval) {
+				if (typeof(attachmentFile.path) == "string") {
+					saveAttach(attachmentFile, function(attach) {
+						var relation = project.relation("attachments");
+						relation.add(attach);
+						project.save();
+					});
+				} else {
+					for (var i = 0, len = attachmentFile.length; i < len; i++) {
+						saveAttach(attachmentFile[i], function(attach){
+							var relation = project.relation("attachments");
+							relation.add(attach);
+							project.save();
+						});
+					}
+				}
+				then();
+			});
+		});
 	}, renderErrorFn(res));
 }
 
@@ -463,14 +508,22 @@ app.get('/projects/edit/:id', function (req, res) {
     query.find().then(function (projects) {
 		if (projects && projects.length > 0) {
 			var project = projects[0];
-			var relation = project.relation("attachments");
-            project = transformProject(project);
-			if (project.creatorId != cid) {
-				res.redirect("/projects/"+projectId+"/comments");
-				return;
-			}
-			relation.query().find({
-				success: function(attachs){
+			var peq = new AV.Query('ProjectEval');
+			peq.equalTo('project', AV.Object.createWithoutData('Project', projectId));
+			peq.equalTo('user', AV.User.current());
+			peq.find().then(function(pes) {
+				var projectEval;
+				if (pes) {
+					projectEval = pes[0];
+				}
+				project = evalProject(project, projectEval);
+				var relation = project.relation("attachments");
+				project = transformProject(project);
+				if (project.creatorId != cid) {
+					res.redirect("/projects/"+projectId+"/comments");
+					return;
+				}
+				relation.query().find().then(function(attachs){
 					res.render('edit', { 
 						project: project, 
 						token: token, 
@@ -478,7 +531,7 @@ app.get('/projects/edit/:id', function (req, res) {
 						isAdmin: isAdmin,
 						attachs: attachs
 					});
-				}
+				});
 			});
         } else {
             renderError(res, '找不到项目，该项目可能已经被删除');
@@ -509,7 +562,7 @@ app.post('/projects/:id', function (req, res) {
 				return;
 			}
 			updateProject(res, project, attachmentFile, req.body.name, req.body.introdution, req.body.type,
-				req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, function (project) {
+				req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, req.body.jintiao, function (project) {
 				res.redirect('/projects');
 			});
 		} else {
@@ -608,15 +661,25 @@ app.get('/projects/:id/comments', function (req, res) {
 				relation.query().find().then(function(attachs){
 					var grouprelation = project.relation("group");
 					grouprelation.query().find().then(function(groups){
-						project = transformProject(project);
-						res.render('item', { 
-							project: project, 
-							isAdmin: isAdmin,
-							token: token, 
-							comments: comments,
-							cid: cid,
-							attachs: attachs,
-							groups: groups
+						var peq = new AV.Query('ProjectEval');
+						peq.equalTo('project', AV.Object.createWithoutData('Project', projectId));
+						peq.equalTo('user', AV.User.current());
+						peq.find().then(function(pes) {
+							var projectEval;
+							if (pes) {
+								projectEval = pes[0];
+							}
+							project = evalProject(project, projectEval);
+							project = transformProject(project);
+							res.render('item', { 
+								project: project, 
+								isAdmin: isAdmin,
+								token: token, 
+								comments: comments,
+								cid: cid,
+								attachs: attachs,
+								groups: groups
+							});
 						});
 					});
 				});

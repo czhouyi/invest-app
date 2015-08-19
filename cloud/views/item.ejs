@@ -61,13 +61,19 @@
 			</span>
 		</li>
 		<li class="list-group-item">
-			<span>投资回报</span><span class="right"></span>
-		</li>
-		<li class="list-group-item">
 			<span>联系方式</span><span class="right"><%= project.contact_way %></span>
 		</li>
 		<li class="list-group-item">
 			<span>项目精调</span><span class="right"><%= project.jintiao %></span>
+		</li>
+		<li class="list-group-item">
+			<span>我的投资额</span><span class="right"><%= project.invest%></span>
+		</li>
+		<li class="list-group-item">
+			<span>投资时估值</span><span class="right"><%= project.invest_eval%></span>
+		</li>
+		<li class="list-group-item">
+			<span>最终估值</span><span class="right"><%= project.final_eval%></span>
 		</li>
 	</ul>
 	<% if(cid==project.creatorId){ %>
