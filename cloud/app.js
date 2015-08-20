@@ -139,7 +139,7 @@ function transformProject(t) {
 		return_rate = Math.round(t.get('final_eval')*100.0/t.get('invest_eval'))/100;
 	}
 	if (return_rate && t.get('invest')) {
-		return_val = t.get('invest') * return_rate;
+		return_val = Math.round(t.get('invest') * t.get('final_eval')*1.0/t.get('invest_eval'));
 	}
 	return {
 		id: t.id,
@@ -675,32 +675,38 @@ app.get('/projects/:id/comments', function (req, res) {
 					grouprelation.query().find().then(function(groups){
 						var peq = new AV.Query('ProjectEval');
 						peq.equalTo('project', AV.Object.createWithoutData('Project', projectId));
-						// peq.equalTo('user', AV.User.current());
+						peq.equalTo('user', AV.User.current());
 						peq.find().then(function(pes) {
 							var projectEval;
-							var user_ids = [];
-							for (var i = 0; i < pes.length; i++) {
-								if (pes[i].get('user').id==cid) {
-									projectEval = pes[i];
-								} else {
-									user_ids.push(pes[i].get('user').id);
-								}
+							if (pes && pes.length > 0) {
+								projectEval = pes[0];
 							}
 							project = evalProject(project, projectEval);
+							project = transformProject(project);
 							// 找到合伙人
-							var uq = new AV.Query('_User');
-							uq.containedIn("objectId", user_ids);
-							uq.find().then(function(users){
-								var parterner = '';
-								for (var i = 0; i < users.length; i++){
-									if (parterner) {
-										parterner += '、'+users[i].get('realName');
-									} else {
-										parterner += users[i].get('realName');
+							if (projectEval) {
+								var rel_group = projectEval.relation("group");
+								rel_group.query().find().then(function(users){
+									var parterner = '';
+									for (var i = 0; i < users.length; i++){
+										if (parterner) {
+											parterner += '、'+users[i].get('realName');
+										} else {
+											parterner += users[i].get('realName');
+										}
 									}
-								}
-								project = transformProject(project);
-								project.parterner = parterner;
+									project.parterner = parterner;
+									res.render('item', { 
+										project: project, 
+										isAdmin: isAdmin,
+										token: token, 
+										comments: comments,
+										cid: cid,
+										attachs: attachs,
+										groups: groups
+									});
+								});
+							} else {
 								res.render('item', { 
 									project: project, 
 									isAdmin: isAdmin,
@@ -710,7 +716,7 @@ app.get('/projects/:id/comments', function (req, res) {
 									attachs: attachs,
 									groups: groups
 								});
-							});
+							}
 						});
 					});
 				});
