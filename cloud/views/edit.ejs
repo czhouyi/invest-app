@@ -105,10 +105,10 @@
   </div>
   <div class="form-group">
     <label class="control-label" for="inputInvestMoney">
-      投资额
+      融资额
     </label>
     <div class="controls">
-      <input type="number" name="invest_money" id="inputInvestMoney" value="<%= project.invest_money %>" class="form-control" placeholder="投资额" >
+      <input type="number" name="invest_money" id="inputInvestMoney" value="<%= project.invest_money %>" class="form-control" placeholder="融资额" >
     </div>
   </div>
   <div class="form-group">
@@ -125,6 +125,30 @@
     </label>
     <div class="controls">
       <input type="text" name="jintiao" id="inputJintiao" value="<%= project.jintiao %>" class="form-control" placeholder="项目精调" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputInvest">
+      我的投资额
+    </label>
+    <div class="controls">
+      <input type="number" name="invest" id="inputInvest" value="<%= project.invest %>" class="form-control" placeholder="我的投资额" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputInvestEval">
+      投资时估值
+    </label>
+    <div class="controls">
+      <input type="number" name="invest_eval" id="inputInvestEval" value="<%= project.invest_eval %>" class="form-control" placeholder="投资时估值" >
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label" for="inputFinalEval">
+      最终估值
+    </label>
+    <div class="controls">
+      <input type="number" name="final_eval" id="inputFinalEval" value="<%= project.final_eval %>" class="form-control" placeholder="最终估值" >
     </div>
   </div>
 

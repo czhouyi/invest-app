@@ -66,14 +66,26 @@
 		<li class="list-group-item">
 			<span>项目精调</span><span class="right"><%= project.jintiao %></span>
 		</li>
+	</ul>
+	<p>项目投资回报</p>
+	<ul class="list-group">
 		<li class="list-group-item">
 			<span>我的投资额</span><span class="right"><%= project.invest%></span>
+		</li>
+		<li class="list-group-item">
+			<span>投资回报额</span><span class="right"><%= project.return_val%></span>
+		</li>
+		<li class="list-group-item">
+			<span>投资回报率</span><span class="right"><%= project.return_rate%></span>
 		</li>
 		<li class="list-group-item">
 			<span>投资时估值</span><span class="right"><%= project.invest_eval%></span>
 		</li>
 		<li class="list-group-item">
 			<span>最终估值</span><span class="right"><%= project.final_eval%></span>
+		</li>
+		<li class="list-group-item">
+			<span>合投人</span><span class="right"><%= project.final_eval%></span>
 		</li>
 	</ul>
 	<% if(cid==project.creatorId){ %>

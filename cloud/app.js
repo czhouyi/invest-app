@@ -134,6 +134,13 @@ function transformProject(t) {
 			star += '<span class="glyphicon glyphicon-star-empty"></span>';
 		}
 	}
+	var return_val, return_rate;
+	if (t.get('invest_eval') && t.get('final_eval') && t.get('invest_eval') > 0) {
+		return_rate = Math.round(t.get('final_eval')*100.0/t.get('invest_eval'))/100;
+	}
+	if (return_rate && t.get('invest')) {
+		return_val = t.get('invest') * return_rate;
+	}
 	return {
 		id: t.id,
 		name: nnStr(t.get('name')),
@@ -152,6 +159,8 @@ function transformProject(t) {
 		invest: nnStr(t.get('invest')),
 		invest_eval: nnStr(t.get('invest_eval')),
 		final_eval: nnStr(t.get('final_eval')),
+		return_val: return_val ? return_val : '',
+		return_rate: return_rate ? return_rate : '',
 		createdAt: formatTime(t.createdAt),
 		createdAtLong: formatTimeLong(t.createdAt),
 		createdAtUnix: moment(t.createdAt).valueOf()
@@ -439,7 +448,8 @@ function createProject(res, client, attachmentFile, name, introdution, type, sta
 	}, renderErrorFn(res));
 }
 
-function updateProject(res, project, attachmentFile, name, introdution, type, status, rating, invest_money, contact_way, jintiao, then) {
+function updateProject(res, project, attachmentFile, name, introdution, type, status, 
+		rating, invest_money, contact_way, jintiao, invest, invest_eval, final_eval, then) {
 	//project.set('creator', AV.User.current());
 	project.set('name', name);
 	project.set('introdution', introdution);
@@ -457,17 +467,18 @@ function updateProject(res, project, attachmentFile, name, introdution, type, st
 		peq.find().then(function (projectEvals) {
 			var projectEval;
 			if (projectEvals && projectEvals.length > 0) {
-				mlog.log('notnull');
 				projectEval = projectEvals[0];
 			} else {
-				mlog.log('null');
 				projectEval = new AV.Object('ProjectEval');
 			}
 			projectEval.set('status', status);
 			projectEval.set('contact', contact_way);
 			projectEval.set('rating', parseInt(rating));
 			projectEval.set('jintiao', jintiao);
-			projectEval.save().then(function(projectEval) {
+			projectEval.set('invest', invest);
+			projectEval.set('invest_eval', invest_eval);
+			projectEval.set('final_eval', final_eval);
+			projectEval.save().then(function (projectEval) {
 				if (typeof(attachmentFile.path) == "string") {
 					saveAttach(attachmentFile, function(attach) {
 						var relation = project.relation("attachments");
@@ -562,7 +573,8 @@ app.post('/projects/:id', function (req, res) {
 				return;
 			}
 			updateProject(res, project, attachmentFile, req.body.name, req.body.introdution, req.body.type,
-				req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, req.body.jintiao, function (project) {
+				req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, req.body.jintiao, 
+				req.body.invest, req.body.invest_eval, req.body.final_eval, function (project) {
 				res.redirect('/projects');
 			});
 		} else {
