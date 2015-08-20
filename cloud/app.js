@@ -475,9 +475,9 @@ function updateProject(res, project, attachmentFile, name, introdution, type, st
 			projectEval.set('contact', contact_way);
 			projectEval.set('rating', parseInt(rating));
 			projectEval.set('jintiao', jintiao);
-			projectEval.set('invest', invest);
-			projectEval.set('invest_eval', invest_eval);
-			projectEval.set('final_eval', final_eval);
+			projectEval.set('invest', invest ? parseInt(invest) : null);
+			projectEval.set('invest_eval', invest_eval ? parseInt(invest_eval) : null);
+			projectEval.set('final_eval', final_eval ? parseInt(final_eval): null);
 			projectEval.save().then(function (projectEval) {
 				if (typeof(attachmentFile.path) == "string") {
 					saveAttach(attachmentFile, function(attach) {
@@ -675,22 +675,41 @@ app.get('/projects/:id/comments', function (req, res) {
 					grouprelation.query().find().then(function(groups){
 						var peq = new AV.Query('ProjectEval');
 						peq.equalTo('project', AV.Object.createWithoutData('Project', projectId));
-						peq.equalTo('user', AV.User.current());
+						// peq.equalTo('user', AV.User.current());
 						peq.find().then(function(pes) {
 							var projectEval;
-							if (pes) {
-								projectEval = pes[0];
+							var user_ids = [];
+							for (var i = 0; i < pes.length; i++) {
+								if (pes[i].get('user').id==cid) {
+									projectEval = pes[i];
+								} else {
+									user_ids.push(pes[i].get('user').id);
+								}
 							}
 							project = evalProject(project, projectEval);
-							project = transformProject(project);
-							res.render('item', { 
-								project: project, 
-								isAdmin: isAdmin,
-								token: token, 
-								comments: comments,
-								cid: cid,
-								attachs: attachs,
-								groups: groups
+							// 找到合伙人
+							var uq = new AV.Query('_User');
+							uq.containedIn("objectId", user_ids);
+							uq.find().then(function(users){
+								var parterner = '';
+								for (var i = 0; i < users.length; i++){
+									if (parterner) {
+										parterner += '、'+users[i].get('realName');
+									} else {
+										parterner += users[i].get('realName');
+									}
+								}
+								project = transformProject(project);
+								project.parterner = parterner;
+								res.render('item', { 
+									project: project, 
+									isAdmin: isAdmin,
+									token: token, 
+									comments: comments,
+									cid: cid,
+									attachs: attachs,
+									groups: groups
+								});
 							});
 						});
 					});
