@@ -361,17 +361,21 @@ app.get('/projects/follow', function (req, res) {
 			var pequery = new AV.Query('ProjectEval');
 			pequery.matchesQuery("project", query);
 			pequery.find().then(function(pes) {
-				projects = combinProjects(projects, pes, cid);
-				projects = _.map(projects, transformProject);
-				res.render('follow', {
-					projects: projects,
-					page: page,
-					pageCount: pageCount,
-					type: type,
-					status: status,
-					rating: rating,
-					isAdmin: isAdmin,
-					token: token
+				var userquery = new AV.Query(AV.User);
+				userquery.find().then(function(users){
+					projects = combinProjects(projects, pes, cid);
+					projects = setCreator(projects, users);
+					projects = _.map(projects, transformProject);
+					res.render('follow', {
+						projects: projects,
+						page: page,
+						pageCount: pageCount,
+						type: type,
+						status: status,
+						rating: rating,
+						isAdmin: isAdmin,
+						token: token
+					});
 				});
 			}, mutil.renderErrorFn(res));
 		});
@@ -575,7 +579,7 @@ app.post('/projects/:id', function (req, res) {
 			updateProject(res, project, attachmentFile, req.body.name, req.body.introdution, req.body.type,
 				req.body.status, req.body.rating, req.body.invest_money, req.body.contact_way, req.body.jintiao, 
 				req.body.invest, req.body.invest_eval, req.body.final_eval, function (project) {
-				res.redirect('/projects');
+				res.redirect('/projects/edit/'+projectId);
 			});
 		} else {
 			renderError(res, '找不到项目，该项目可能已经被删除');
@@ -605,13 +609,29 @@ app.post('/attach/delete', function (req, res) {
 			var relation = project.relation("attachments");
 			var attach = AV.Object.createWithoutData('Attach', aid);
 			relation.remove(attach);
-			project.save();
-			
-			res.redirect("/projects/"+project.id);
+			project.save().then(function(_project){
+				res.json({"success":true});
+			});
 		} else {
 			renderError(res, '找不到附件对应的项目，该项目可能已经被删除');
 		}
 	}, renderErrorFn(res));
+});
+
+app.post('/comment/delete/:id', function (req, res) {
+	if (!login.isLogin(req)) {
+		res.redirect('/login');
+		return;
+	}
+	var token = req.token;
+	var commentId = req.params.id;
+	var cid = req.cid;
+	var client = req.client;
+
+	var comment = AV.Object.createWithoutData('Comment', commentId);
+	comment.destroy().then(function(_comment) {
+		res.json({"success":true});
+	});
 });
 
 app.post('/projects/delete/:id', function (req, res) {
@@ -636,10 +656,9 @@ app.post('/projects/delete/:id', function (req, res) {
 				relation.query().find().then(function(list){
 					AV.Object.destroyAll(list);
 					project.destroy().then(function(project){
-						res.redirect('/projects');		
+						res.json({"success":true});
 					});
 				});
-				res.redirect("/projects/"+project.id);
 			} else {
 				renderError(res, '找不到该项目，该项目可能已经被删除');
 			}
@@ -954,6 +973,17 @@ function combinProjects(ps, pes, cid) {
 		}
 	}
 	return ps;
+}
+
+function setCreator(projects, users) {
+	for (var i = 0; i < projects.length; i++) {
+		for (var j = 0; j < users.length; j++) {
+			if (projects[i].get('creator').id == users[j].id) {
+				projects[i].set('creator', users[j]);
+			}
+		}
+	}
+	return projects;
 }
 
 app.get('/contact/profile/:uid', function (req, res) {

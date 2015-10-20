@@ -124,6 +124,9 @@
   <p class="project-comment-title">
     <span class="project-user"><b><%= comment.fromuser %></b></span>
     <span class="project-date bstooltip" title="<%= comment.createdAtLong %>">@ <%= comment.createdAtLong %></span>
+	<% if(cid==comment.fromid){ %>
+	<button onclick="deleteComment('<%= comment.id %>', '<%= project.id %>');" class="btn btn-link">删除留言</button>
+	<% } %>
   </p>
 
   <div class="ticket-thread-content">
@@ -144,9 +147,37 @@ function deleteProject(projectId, projectName) {
 		confirmButtonText: "删除",
 		closeOnConfirm: false
 	}, function() {
-		$.post("/projects/delete/"+projectId, function(data) {
-			//swal("已删除!", "项目(" + projectName + ")已删除.", "success"); 
-			location.href="/projects";
+		$.ajax({
+			url:"/projects/delete/"+projectId,
+			method:"post",
+			complete : function(data) {
+				if (data.responseJSON.success) {
+					location.href="/projects";
+				}
+			}
+		});
+	});
+
+}
+function deleteComment(commentId, projectId) {
+	swal({
+		title: "确定删除本条留言？",
+		text: "",
+		type: "warning",
+		showCancelButton: true,
+		cancelButtonText: "取消",
+		confirmButtonColor: "#DD6B55",
+		confirmButtonText: "删除",
+		closeOnConfirm: false
+	}, function() {
+		$.ajax({
+			url:"/comment/delete/"+commentId,
+			method:"post",
+			complete : function(data) {
+				if (data.responseJSON.success) {
+					location.href="/projects/" + projectId + "/comments";
+				}
+			}
 		});
 	});
 
