@@ -355,27 +355,24 @@ app.get('/projects/follow', function (req, res) {
 		var skip = (page - 1) * limit;
 		query.limit(limit);
 		query.skip(skip);
+		query.include('creator');
 			
 		query.find().then(function(projects) {
 			projects = projects || [];
 			var pequery = new AV.Query('ProjectEval');
 			pequery.matchesQuery("project", query);
 			pequery.find().then(function(pes) {
-				var userquery = new AV.Query(AV.User);
-				userquery.find().then(function(users){
-					projects = combinProjects(projects, pes, cid);
-					projects = setCreator(projects, users);
-					projects = _.map(projects, transformProject);
-					res.render('follow', {
-						projects: projects,
-						page: page,
-						pageCount: pageCount,
-						type: type,
-						status: status,
-						rating: rating,
-						isAdmin: isAdmin,
-						token: token
-					});
+				projects = combinProjects(projects, pes, cid);
+				projects = _.map(projects, transformProject);
+				res.render('follow', {
+					projects: projects,
+					page: page,
+					pageCount: pageCount,
+					type: type,
+					status: status,
+					rating: rating,
+					isAdmin: isAdmin,
+					token: token
 				});
 			}, mutil.renderErrorFn(res));
 		});
@@ -426,6 +423,8 @@ function createProject(res, client, attachmentFile, name, introdution, type, sta
 
 	project.save().then(function (project) {
 		var projectEval = new AV.Object('ProjectEval');
+		projectEval.set('project', project);
+		projectEval.set('user', AV.User.current());
 
 		projectEval.set('status', status);
 		projectEval.set('contact', contact_way);
@@ -474,6 +473,8 @@ function updateProject(res, project, attachmentFile, name, introdution, type, st
 				projectEval = projectEvals[0];
 			} else {
 				projectEval = new AV.Object('ProjectEval');
+				projectEval.set('project', AV.Object.createWithoutData('Project', project.id));
+				projectEval.set('user', AV.User.current());
 			}
 			projectEval.set('status', status);
 			projectEval.set('contact', contact_way);
@@ -680,7 +681,15 @@ app.get('/projects/:id/comments', function (req, res) {
     query.equalTo('project', AV.Object.createWithoutData('Project', projectId));
 	query.include("fromuser");
 	query.include("touser");
-    query.find().then(function (comments) {
+	var cql = " select include fromuser, * from Comment ";
+	cql += " where project in (select * from Project where objectId=?) "
+	cql += " and ( fromuser in (select follower from _Follower where user in (select * from _User where objectId=?)) ";
+	cql += " or fromuser in (select followee from _Followee where user in (select * from _User where objectId=?)) ";
+	cql += " or fromuser in (select * from _User where objectId=?) ) ";
+	cql += " order by createdAt ";
+	AV.Query.doCloudQuery(cql, [projectId, cid, cid, cid]).then(function(result){
+    //query.find().then(function (comments) {
+		comments = result.results;
 		var pq = new AV.Query('Project');
 		pq.equalTo('objectId', projectId);
 		pq.include('creator');
