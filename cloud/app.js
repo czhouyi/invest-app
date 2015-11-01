@@ -278,6 +278,7 @@ app.get('/projects', function (req, res) {
 				projects = projects || [];
 				var pequery = new AV.Query('ProjectEval');
 				pequery.matchesQuery("project", query);
+				pequery.ascending('updatedAt');
 				pequery.find().then(function(pes) {
 					projects = combinProjects(projects, pes, cid);
 					projects = filter_projects(projects, status, rating);
@@ -375,6 +376,7 @@ app.get('/projects/follow', function (req, res) {
 			projects = projects || [];
 			var pequery = new AV.Query('ProjectEval');
 			pequery.matchesQuery("project", query);
+			pequery.ascending('updatedAt');
 			pequery.find().then(function(pes) {
 				projects = combinProjects(projects, pes, cid);
 				projects = filter_projects(projects, status, rating);
@@ -997,6 +999,7 @@ function combinProjects(ps, pes, cid) {
 		ps[i].set('status', 'FINANCING');
 		for (var j = 0; j < pes.length; j++) {
 			if (ps[i].id==pes[j].get('project').id && pes[j].get('user').id==cid) {
+				mlog.log(pes[j].get('status'));
 				ps[i].set('status', pes[j].get('status'));
 				ps[i].set('rating', pes[j].get('rating') == null ? 0 : pes[j].get('rating'));
 			}
@@ -1055,10 +1058,15 @@ app.get('/contact/profile/:uid', function (req, res) {
 							AV.Query.doCloudQuery("select count(*), * from Project where creator=pointer('_User', ?) and group in (select * from _User where objectId=?)", [uid, cid], {
 								success: function(result){
 									var mrs = result.results; // 邀请我参加项目集合
-									mrs = _.map(mrs, transformProject);
 									user.mcnt = result.count; // 邀请我参与项目数量
-
-									res.render('profile', {user: user, mrs: mrs, isAdmin: isAdmin});
+									AV.Query.doCloudQuery("select * from ProjectEval where project in ( select * from Project where creator=pointer('_User', ?) and group in (select * from _User where objectId=?)) order by updatedAt ", [uid, cid], {
+										success: function(result) {
+											var mres = result.results;
+											mrs = combinProjects(mrs, mres, cid);
+											mrs = _.map(mrs, transformProject);
+											res.render('profile', {user: user, mrs: mrs, isAdmin: isAdmin});
+										}
+									});
 								}
 							});
 						}
