@@ -64,10 +64,10 @@ var type2showMap = {
 };
 
 var status2showMap = {
-	'FINANCING': '进行融资',
-	'FOLLOWING': '跟着',
-	'COMPLETE': '投资完成',
-	'DISCARD': '放弃'
+	'FINANCING': '融资开放',
+	'COMPLETE': '融资完成',
+	'FOLLOWING': '后续跟踪',
+	'DISCARD': '放弃终止'
 };
 var renderError = mutil.renderError;
 var renderErrorFn = mutil.renderErrorFn;
