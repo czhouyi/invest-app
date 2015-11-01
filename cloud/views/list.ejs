@@ -36,10 +36,10 @@
 		<div class="form-group">
 			<select id="inputStatus" class="form-control" name="status" required>
 				<option value="" selected="selected">项目状态</option>
-				<option value="FINANCING">融资开放</option>
-				<option value="COMPLETE">融资完成</option>
-				<option value="FOLLOWING">后续跟踪</option>
-				<option value="DISCARD">放弃中止</option>
+				<option value="FINANCING">进行融资</option>
+				<option value="FOLLOWING">跟着</option>
+				<option value="COMPLETE">投资完成</option>
+				<option value="DISCARD">放弃</option>
 			</select>
 		</div>
 		<div class="form-group">
@@ -50,7 +50,7 @@
 				<option value="3">3星</option>
 				<option value="4">4星</option>
 				<option value="5">5星</option>
-				<option value="-1">判断保留</option>
+				<option value="0">判断保留</option>
 			</select>
 		</div>
 	</form>
@@ -82,7 +82,7 @@
 	<div class="form-group" >
 		<a href="/projects?page=<%= page-1 %><%if(type){%>&type=<%=type%><%}%><%if(status){%>&status=<%=status%><%}%><%if(rating){%>&rating=<%=rating%><%}%>" class="btn btn-default" <% if(page == 1) {%>disabled<%}%>>上一页</a>
 		<span><%= page %>/<%= pageCount%></span>
-		<a href="/projects?page=<%= page+1 %><%if(type){%>&type=<%=type%><%}%><%if(status){%>&status=<%=status%><%}%><%if(rating){%>&rating    =<%=rating%><%}%>" class="btn btn-default" <% if(page == pageCount) {%>disabled<%}%>>下一页</a>
+		<a href="/projects?page=<%= page+1 %><%if(type){%>&type=<%=type%><%}%><%if(status){%>&status=<%=status%><%}%><%if(rating){%>&rating=<%=rating%><%}%>" class="btn btn-default" <% if(page == pageCount) {%>disabled<%}%>>下一页</a>
 	</div>
 	<div class="form-group" >
 		<input id="inputPage" type="text" class="form-control" name="page" size="3">

@@ -64,10 +64,10 @@ var type2showMap = {
 };
 
 var status2showMap = {
-	'FINANCING': '融资开放',
-	'COMPLETE': '融资完成',
-	'FOLLOWING': '后续跟踪',
-	'DISCARD': '放弃中止'
+	'FINANCING': '进行融资',
+	'FOLLOWING': '跟着',
+	'COMPLETE': '投资完成',
+	'DISCARD': '放弃'
 };
 var renderError = mutil.renderError;
 var renderErrorFn = mutil.renderErrorFn;
@@ -264,17 +264,6 @@ app.get('/projects', function (req, res) {
 	if (type) {
 		query.equalTo('type', type);
 	}
-	if (status) {
-		query.equalTo('status', status);
-	}
-	if (rating) {
-		var rat = parseInt(rating);
-		if (rat == -1) {
-			query.equalTo('rating', null);
-		} else {
-			query.equalTo('rating', rat);
-		}
-	}
 	query.count({
 		success: function(count) {
 			var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
@@ -282,8 +271,8 @@ app.get('/projects', function (req, res) {
 				page = pageCount;
 			}
 			var skip = (page - 1) * limit;
-			query.limit(limit);
-			query.skip(skip);
+			//query.limit(limit);
+			//query.skip(skip);
 			
 			query.find().then(function(projects) {
 				projects = projects || [];
@@ -291,6 +280,13 @@ app.get('/projects', function (req, res) {
 				pequery.matchesQuery("project", query);
 				pequery.find().then(function(pes) {
 					projects = combinProjects(projects, pes, cid);
+					projects = filter_projects(projects, status, rating);
+					count = projects.length;
+					var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+					if (page > pageCount) {
+						page = pageCount;
+					}
+					projects = projects.slice((page-1)*limit, page*limit);
 					projects = _.map(projects, transformProject);
 					res.render('list', {
 						projects: projects,
@@ -307,6 +303,36 @@ app.get('/projects', function (req, res) {
 		}
 	});
 });
+
+function filter_projects(projects, status, rating) {
+	if (status == null && rating == null) {
+		return projects;
+	}
+	var project_parts = [];
+	for ( var i = 0; i < projects.length; i++) {
+		if (status != null && rating != null) {
+			var rat = parseInt(rating);
+			if (status == projects[i].get('status') && rat == projects[i].get('rating')) {
+				project_parts.push(projects[i]);
+				continue;
+			}
+		} else {
+			if (status != null && status == projects[i].get('status')) {
+				project_parts.push(projects[i]);
+				continue;
+			}
+			if (rating != null) {
+				var rat = parseInt(rating);
+				if (rat == projects[i].get('rating')) {
+					project_parts.push(projects[i]);
+					continue;
+				}
+			}
+		}
+	}
+
+	return project_parts;
+}
 
 app.get('/projects/follow', function (req, res) {
 	if (!login.isLogin(req)) {
@@ -335,26 +361,14 @@ app.get('/projects/follow', function (req, res) {
 	if (type) {
 		query.equalTo('type', type);
 	}
-	if (status) {
-		query.equalTo('status', status);
-	}
-	
-	if (rating) {
-		var rat = parseInt(rating);
-		if (rat == -1) {
-			query.equalTo('rating', null);
-		} else {
-			query.equalTo('rating', rat);
-		}
-	}
 	query.count().then(function(count) {
 		var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
 		if (page > pageCount) {
 			page = pageCount;
 		}
 		var skip = (page - 1) * limit;
-		query.limit(limit);
-		query.skip(skip);
+		//query.limit(limit);
+		//query.skip(skip);
 		query.include('creator');
 			
 		query.find().then(function(projects) {
@@ -363,6 +377,13 @@ app.get('/projects/follow', function (req, res) {
 			pequery.matchesQuery("project", query);
 			pequery.find().then(function(pes) {
 				projects = combinProjects(projects, pes, cid);
+				projects = filter_projects(projects, status, rating);
+				count = projects.length;
+				var pageCount = (count%limit==0) ? (count/limit) : ((count-count%limit)/limit + 1);
+				if (page > pageCount) {
+					page = pageCount;
+				}
+				projects = projects.slice((page-1)*limit, page*limit);
 				projects = _.map(projects, transformProject);
 				res.render('follow', {
 					projects: projects,
@@ -977,7 +998,7 @@ function combinProjects(ps, pes, cid) {
 		for (var j = 0; j < pes.length; j++) {
 			if (ps[i].id==pes[j].get('project').id && pes[j].get('user').id==cid) {
 				ps[i].set('status', pes[j].get('status'));
-				ps[i].set('rating', pes[j].get('rating'));
+				ps[i].set('rating', pes[j].get('rating') == null ? 0 : pes[j].get('rating'));
 			}
 		}
 	}
