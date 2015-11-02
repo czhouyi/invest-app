@@ -999,7 +999,6 @@ function combinProjects(ps, pes, cid) {
 		ps[i].set('status', 'FINANCING');
 		for (var j = 0; j < pes.length; j++) {
 			if (ps[i].id==pes[j].get('project').id && pes[j].get('user').id==cid) {
-				mlog.log(pes[j].get('status'));
 				ps[i].set('status', pes[j].get('status'));
 				ps[i].set('rating', pes[j].get('rating') == null ? 0 : pes[j].get('rating'));
 			}
