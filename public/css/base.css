@@ -1,0 +1,81 @@
+html {
+  -webkit-font-smoothing: antialiased;
+  font-family: "Microsoft YaHei","微软雅黑","STHeiti","WenQuanYi Micro Hei",SimSun,sans-serif;
+}
+body {
+  font-size: 13px;
+  line-height: 1.42857143;
+  color: #32353d;
+  margin: 0;
+}
+.signin-bg {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	background-image: url('images/1.jpg');
+	background-position: center;
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-size: cover;
+	-webkit-background-size: cover;
+	-o-background-size: cover;
+}
+.container{
+	position: fixed;
+	left: 35%;
+	width: 65%;
+	height: 100%;
+	box-shadow: 1px 3px 5px #999;
+	-webkit-box-shadow: 1px 3px 5px #999;
+	-moz-box-shadow: 1px 3px 5px #999;
+	background: rgba(255,255,255,.4);
+	display: table;
+}
+.wrapper{
+	display: table-cell;
+	height: 80px;
+	vertical-align: middle;
+	padding-left: 40px;
+}
+.logo{
+	margin-bottom: 10px;
+	height: 42px;
+}
+.form-group{
+	margin: 10px 0;
+}
+.myInput{
+	width: 200px;
+	padding: 10px 16px;
+	font-size: 14px;
+	color: #333;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	outline: none;
+}
+.myInput:focus{
+	background-color: rgba(255,255,255,.9);
+}
+.btn-group{
+	margin-top: 20px;
+}
+.btn{
+	display: block;
+	width: 140px;
+	height: 38px;
+	line-height: 0px;
+	color: #fff;
+	font-size: 14px;
+	text-align: center;
+	background-color: #387bd7;
+	text-decoration: none;
+	border-radius: 4px;
+	transition: .5s;
+	-moz-transition: .5s; /* Firefox 4 */
+	-webkit-transition: .5s; /* Safari 和 Chrome */
+	-o-transition: .5s; /* Opera */
+}
+.btn:hover{
+	background-color: #3069b8;
+}
