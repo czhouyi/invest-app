@@ -724,6 +724,16 @@ app.get('/projects/:id/comments', function (req, res) {
 				relation.query().find().then(function(attachs){
 					var grouprelation = project.relation("group");
 					grouprelation.query().find().then(function(groups){
+						var hasMe = false;
+						for (var i = 0; i<groups.length; i++) {
+							if (groups[i].get("id")==cid) {
+								hasMe = true;
+								break;
+							}
+						}
+						if (!hasMe) {
+							groups.push(AV.User.current());
+						}
 						var peq = new AV.Query('ProjectEval');
 						peq.equalTo('project', AV.Object.createWithoutData('Project', projectId));
 						peq.equalTo('user', AV.User.current());
