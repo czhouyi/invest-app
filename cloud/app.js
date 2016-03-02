@@ -726,7 +726,7 @@ app.get('/projects/:id/comments', function (req, res) {
 					grouprelation.query().find().then(function(groups){
 						var hasMe = false;
 						for (var i = 0; i<groups.length; i++) {
-							if (groups[i].get("id")==cid) {
+							if (groups[i].id==cid) {
 								hasMe = true;
 								break;
 							}
